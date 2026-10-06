@@ -846,7 +846,7 @@ export const WorksheetGenerator: React.FC = () => {
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
               <span className="font-bold text-xs sm:text-sm text-neutral-900 dark:text-white">
-                Pembuat Prompt ChatGPT
+                Buat PROMPT
               </span>
             </div>
             <div className="flex items-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400 font-medium">
@@ -1008,11 +1008,11 @@ export const WorksheetGenerator: React.FC = () => {
                       href="https://chatgpt.com/"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg font-medium text-xs text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition"
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg font-medium text-xs text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition"
                       title="Buka ChatGPT di tab baru"
                     >
                       <ExternalLink className="w-3.5 h-3.5" />
-                      <span className="hidden sm:inline">ChatGPT</span>
+                      <span>BUKA ChatGPT</span>
                     </a>
                   </div>
                 </div>

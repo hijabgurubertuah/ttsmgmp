@@ -14,10 +14,10 @@ export default function App() {
             </div>
             <div>
               <h1 className="font-bold text-base sm:text-lg text-slate-900 leading-tight">
-                TTS MAKER By MGMP IPA Kec. Bengkalis
+                BUAT TTS SEMUA MATA PELAJARAN
               </h1>
-              <p className="text-xs text-slate-500 hidden sm:block">
-                Bisa untuk semua Mata Pelajaran
+              <p className="text-[11px] sm:text-xs text-slate-500 italic leading-tight mt-0.5">
+                KARYA MGMP IPA KECAMATAN BENGKALIS RIAU
               </p>
             </div>
           </div>
