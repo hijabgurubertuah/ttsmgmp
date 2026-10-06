@@ -1292,11 +1292,11 @@ export const WorksheetGenerator: React.FC = () => {
               type="button"
               onClick={() => handleExportPdf(false)}
               disabled={isExportingPdf}
-              className="flex-1 h-12 px-3 bg-neutral-900 hover:bg-black active:scale-[0.98] text-white dark:bg-neutral-100 dark:hover:bg-white dark:text-neutral-950 font-bold transition flex items-center justify-center gap-1.5 text-xs cursor-pointer disabled:opacity-60 border-r border-neutral-700 dark:border-neutral-300"
+              className="flex-1 h-11 px-3 bg-neutral-900 hover:bg-black active:scale-[0.98] text-white dark:bg-neutral-100 dark:hover:bg-white dark:text-neutral-950 font-bold transition flex items-center justify-center gap-1.5 text-xs cursor-pointer disabled:opacity-60 border-r border-neutral-700 dark:border-neutral-300"
               title="Download Lembar Soal (Kosong) dalam format PDF A4"
             >
               {isExportingPdf && !showAnswerKey ? (
-                <RefreshCw className="w-4 h-4 animate-spin text-amber-400" />
+                <RefreshCw className="w-4 h-4 animate-spin text-teal-400" />
               ) : (
                 <FileDown className="w-4 h-4" />
               )}
@@ -1306,7 +1306,7 @@ export const WorksheetGenerator: React.FC = () => {
               type="button"
               onClick={() => handleExportPdf(true)}
               disabled={isExportingPdf}
-              className="px-3.5 h-12 bg-neutral-800 hover:bg-neutral-900 active:scale-[0.98] text-amber-400 dark:bg-neutral-200 dark:hover:bg-neutral-300 dark:text-amber-800 font-bold transition flex items-center justify-center gap-1.5 text-xs cursor-pointer disabled:opacity-60"
+              className="px-3.5 h-11 bg-neutral-800 hover:bg-neutral-900 active:scale-[0.98] text-teal-300 dark:bg-neutral-200 dark:hover:bg-neutral-300 dark:text-teal-800 font-bold transition flex items-center justify-center gap-1.5 text-xs cursor-pointer disabled:opacity-60"
               title="Download Kunci Jawaban (Terisi) dalam format PDF A4"
             >
               <KeyRound className="w-3.5 h-3.5" />
@@ -1315,16 +1315,16 @@ export const WorksheetGenerator: React.FC = () => {
           </div>
 
           {/* Tombol Ekspor Gambar PNG */}
-          <div className="flex rounded-xl overflow-hidden shadow-xs border border-amber-400 dark:border-amber-600">
+          <div className="flex rounded-xl overflow-hidden shadow-xs border border-teal-500/70 dark:border-teal-600">
             <button
               type="button"
               onClick={() => handleExportImage(false)}
               disabled={isExporting}
-              className="flex-1 h-12 px-3 bg-amber-500 hover:bg-amber-600 active:bg-amber-700 active:scale-[0.98] text-neutral-950 font-bold transition flex items-center justify-center gap-1.5 text-xs cursor-pointer disabled:opacity-60 border-r border-amber-600 dark:border-amber-700"
+              className="flex-1 h-11 px-3 bg-teal-600 hover:bg-teal-700 active:bg-teal-800 active:scale-[0.98] text-white font-bold transition flex items-center justify-center gap-1.5 text-xs cursor-pointer disabled:opacity-60 border-r border-teal-700"
               title="Download Lembar Soal (Kosong) dalam format Gambar PNG resolusi tinggi"
             >
               {isExporting && !showAnswerKey ? (
-                <RefreshCw className="w-4 h-4 animate-spin text-neutral-950" />
+                <RefreshCw className="w-4 h-4 animate-spin text-white" />
               ) : (
                 <ImageIcon className="w-4 h-4" />
               )}
@@ -1334,7 +1334,7 @@ export const WorksheetGenerator: React.FC = () => {
               type="button"
               onClick={() => handleExportImage(true)}
               disabled={isExporting}
-              className="px-3.5 h-12 bg-amber-600 hover:bg-amber-700 active:scale-[0.98] text-white font-bold transition flex items-center justify-center gap-1.5 text-xs cursor-pointer disabled:opacity-60"
+              className="px-3.5 h-11 bg-teal-700 hover:bg-teal-800 active:bg-teal-900 active:scale-[0.98] text-white font-bold transition flex items-center justify-center gap-1.5 text-xs cursor-pointer disabled:opacity-60"
               title="Download Kunci Jawaban (Terisi) dalam format Gambar PNG"
             >
               <KeyRound className="w-3.5 h-3.5" />
@@ -1344,116 +1344,109 @@ export const WorksheetGenerator: React.FC = () => {
         </div>
       </div>
 
-      {/* Modal Siap Unduh / Fail-safe Download Dialog */}
+      {/* Modal Unduh Minimalis Tanpa Penjelasan di UI */}
       {exportModal.isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto">
-          <div className="relative w-full max-w-md bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 sm:p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
-            {/* Header Modal */}
-            <div className="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 pb-3">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-950 flex items-center justify-center text-amber-600 dark:text-amber-400">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 overflow-y-auto">
+          <div className="relative w-full max-w-sm bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-3.5 animate-in fade-in zoom-in-95 duration-150">
+            {/* Header Modal Minimalis */}
+            <div className="flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800 pb-2.5">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-teal-100 dark:bg-teal-950 flex items-center justify-center text-teal-700 dark:text-teal-400">
                   {exportModal.type === 'pdf' ? (
-                    <FileDown className="w-5 h-5" />
+                    <FileDown className="w-4 h-4" />
                   ) : (
-                    <ImageIcon className="w-5 h-5" />
+                    <ImageIcon className="w-4 h-4" />
                   )}
                 </div>
-                <div>
-                  <h3 className="font-bold text-sm sm:text-base text-neutral-900 dark:text-white">
-                    {exportModal.type === 'pdf'
-                      ? `Dokumen PDF ${exportModal.isKey ? 'Kunci Jawaban' : 'Lembar Soal'} Siap!`
-                      : `Gambar ${exportModal.isKey ? 'Kunci Jawaban' : 'Lembar Soal'} Siap!`}
-                  </h3>
-                  <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-                    {exportModal.layoutDesc} • Unduhan otomatis telah dimulai
-                  </p>
-                </div>
+                <h3 className="font-bold text-xs sm:text-sm text-neutral-900 dark:text-white">
+                  {exportModal.type === 'pdf'
+                    ? (exportModal.isKey ? 'PDF Kunci Jawaban' : 'PDF Lembar Soal')
+                    : (exportModal.isKey ? 'Gambar Kunci Jawaban' : 'Gambar Lembar Soal')}
+                </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setExportModal((prev) => ({ ...prev, isOpen: false }))}
                 className="p-1 rounded-lg text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
-                title="Tutup dialog"
+                title="Tutup"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Preview & Keterangan */}
+            {/* Konten Minimalis (Tanpa Penjelasan Teks) */}
             {exportModal.type === 'image' ? (
-              <div className="space-y-3">
-                <div className="max-h-60 overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-950 flex items-center justify-center p-2">
-                  <img
-                    src={exportModal.url}
-                    alt="Hasil TTS A4"
-                    className="max-h-52 w-auto object-contain rounded shadow-xs"
-                  />
-                </div>
-                <div className="flex justify-between items-center text-xs px-1 text-neutral-600 dark:text-neutral-300">
-                  <span className="font-medium text-neutral-500">Ukuran Gambar:</span>
-                  <span className="font-bold text-emerald-600 dark:text-emerald-400">
-                    A4 Standar WYSIWYG (2382 × 3369 px)
-                  </span>
-                </div>
-                <div className="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-xl text-xs text-amber-900 dark:text-amber-300">
-                  <p className="font-semibold flex items-center gap-1.5">
-                    <span>📱</span> Tips Pengguna HP:
-                  </p>
-                  <p className="mt-1 text-[11px] leading-relaxed">
-                    Jika peramban tidak otomatis mendownload, Anda dapat <strong>menyentuh & tahan (tekan lama)</strong> gambar di atas, lalu pilih <strong>&quot;Simpan Gambar&quot;</strong> / <strong>&quot;Download Gambar&quot;</strong> ke galeri.
-                  </p>
-                </div>
+              <div className="flex items-center justify-center bg-neutral-50 dark:bg-neutral-950 rounded-xl border border-neutral-200 dark:border-neutral-800 p-2 max-h-48 overflow-hidden">
+                <img
+                  src={exportModal.url}
+                  alt="Pratinjau TTS"
+                  className="max-h-44 w-auto object-contain rounded shadow-2xs"
+                />
               </div>
             ) : (
-              <div className="p-4 bg-neutral-50 dark:bg-neutral-800/60 rounded-xl border border-neutral-200 dark:border-neutral-700/60 space-y-2.5 text-xs">
-                <div className="flex justify-between items-center text-neutral-700 dark:text-neutral-300">
-                  <span className="font-medium text-neutral-500">Nama Dokumen:</span>
-                  <span className="font-mono font-bold truncate max-w-[210px] text-neutral-900 dark:text-white">
-                    {exportModal.fileName}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center text-neutral-700 dark:text-neutral-300">
-                  <span className="font-medium text-neutral-500">Ukuran & Format:</span>
-                  <span className="font-bold text-emerald-600 dark:text-emerald-400">
-                    PDF A4 Portrait Penuh (210 × 297 mm)
-                  </span>
-                </div>
+              <div className="p-3 bg-neutral-50 dark:bg-neutral-800/60 rounded-xl border border-neutral-200 dark:border-neutral-700/60 flex items-center gap-2.5">
+                <FileDown className="w-5 h-5 text-teal-600 dark:text-teal-400 shrink-0" />
+                <span className="font-mono text-xs font-semibold truncate text-neutral-800 dark:text-neutral-200">
+                  {exportModal.fileName}
+                </span>
               </div>
             )}
 
-            {/* Tombol Aksi Modal */}
-            <div className="flex flex-col gap-2 pt-1">
-              <div className="flex flex-col sm:flex-row gap-2">
+            {/* Tombol Aksi Proporsional */}
+            {exportModal.type === 'pdf' ? (
+              <div className="grid grid-cols-3 gap-2 pt-1">
                 <a
                   href={exportModal.url}
                   download={exportModal.fileName}
-                  className="flex-1 h-11 px-3 bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-neutral-950 font-bold rounded-xl shadow-xs transition flex items-center justify-center gap-1.5 text-xs cursor-pointer text-center"
+                  className="h-9 px-2.5 bg-teal-600 hover:bg-teal-700 active:bg-teal-800 text-white font-bold rounded-xl text-xs transition flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs text-center"
+                  title="Unduh PDF"
                 >
-                  <Download className="w-4 h-4" />
-                  <span>Simpan / Unduh Ulang</span>
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Unduh</span>
                 </a>
                 <a
                   href={exportModal.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="h-11 px-3 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 font-semibold rounded-xl transition flex items-center justify-center gap-1.5 text-xs cursor-pointer text-center"
+                  className="h-9 px-2.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 font-semibold rounded-xl text-xs transition flex items-center justify-center gap-1.5 cursor-pointer text-center"
+                  title="Buka PDF"
                 >
-                  <ExternalLink className="w-4 h-4" />
-                  <span>Buka di Tab Baru</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>Buka</span>
                 </a>
-              </div>
-
-              {exportModal.type === 'pdf' && (
                 <button
                   type="button"
                   onClick={() => window.print()}
-                  className="w-full h-10 px-3 bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700 text-neutral-900 dark:text-neutral-100 font-semibold rounded-xl transition flex items-center justify-center gap-1.5 text-xs cursor-pointer text-center"
+                  className="h-9 px-2.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 font-semibold rounded-xl text-xs transition flex items-center justify-center gap-1.5 cursor-pointer text-center"
+                  title="Cetak PDF"
                 >
-                  <Printer className="w-4 h-4" />
-                  <span>Cetak Langsung / Simpan PDF (Dialog Browser)</span>
+                  <Printer className="w-3.5 h-3.5" />
+                  <span>Cetak</span>
                 </button>
-              )}
-            </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                <a
+                  href={exportModal.url}
+                  download={exportModal.fileName}
+                  className="h-9 px-3 bg-teal-600 hover:bg-teal-700 active:bg-teal-800 text-white font-bold rounded-xl text-xs transition flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs text-center"
+                  title="Unduh Gambar"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Unduh</span>
+                </a>
+                <a
+                  href={exportModal.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="h-9 px-3 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 font-semibold rounded-xl text-xs transition flex items-center justify-center gap-1.5 cursor-pointer text-center"
+                  title="Buka Gambar"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>Buka</span>
+                </a>
+              </div>
+            )}
           </div>
         </div>
       )}
