@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <rect width="512" height="512" rx="128" fill="#0d9488"/>
+  <rect x="76" y="76" width="360" height="360" rx="40" fill="#0f766e" opacity="0.6"/>
+  <!-- Crossword Grid -->
+  <g fill="#ffffff" stroke="#0d9488" stroke-width="8" stroke-linejoin="round">
+    <!-- Row 1: T T S -->
+    <rect x="116" y="116" width="80" height="80" rx="14"/>
+    <rect x="216" y="116" width="80" height="80" rx="14"/>
+    <rect x="316" y="116" width="80" height="80" rx="14"/>
+    
+    <!-- Row 2 -->
+    <rect x="216" y="216" width="80" height="80" rx="14" fill="#f59e0b"/>
+    <rect x="316" y="216" width="80" height="80" rx="14"/>
+    
+    <!-- Row 3 -->
+    <rect x="116" y="316" width="80" height="80" rx="14"/>
+    <rect x="216" y="316" width="80" height="80" rx="14"/>
+    <rect x="316" y="316" width="80" height="80" rx="14" fill="#f59e0b"/>
+  </g>
+  <!-- Letter Labels in Tiles -->
+  <g font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="46" text-anchor="middle" dominant-baseline="central">
+    <text x="156" y="156" fill="#0f766e">T</text>
+    <text x="256" y="156" fill="#0f766e">T</text>
+    <text x="356" y="156" fill="#0f766e">S</text>
+    <text x="256" y="256" fill="#ffffff">M</text>
+    <text x="356" y="256" fill="#0f766e">A</text>
+    <text x="156" y="356" fill="#0f766e">I</text>
+    <text x="256" y="356" fill="#0f766e">P</text>
+    <text x="356" y="356" fill="#ffffff">A</text>
+  </g>
+</svg>
