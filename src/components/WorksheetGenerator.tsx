@@ -119,7 +119,14 @@ export const WorksheetGenerator: React.FC = () => {
   const [copiedPrompt, setCopiedPrompt] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
 
-  // Pembuat Prompt ChatGPT State
+  // Pembuat Prompt ChatGPT State (2 Tab: 'topic' dan 'answers')
+  const [promptActiveTab, setPromptActiveTab] = useState<'topic' | 'answers'>(() => {
+    try {
+      return (localStorage.getItem('tts_prompt_active_tab') as 'topic' | 'answers') || 'topic';
+    } catch {
+      return 'topic';
+    }
+  });
   const [showPromptMaker, setShowPromptMaker] = useState(() => {
     try {
       return localStorage.getItem('tts_show_prompt_maker') !== 'false';
@@ -127,6 +134,7 @@ export const WorksheetGenerator: React.FC = () => {
       return true;
     }
   });
+  // Tab 1: Dari Materi
   const [promptSubject, setPromptSubject] = useState(() => {
     try {
       return localStorage.getItem('tts_prompt_subject') ?? '';
@@ -153,6 +161,21 @@ export const WorksheetGenerator: React.FC = () => {
       return localStorage.getItem('tts_prompt_count') ?? '10';
     } catch {
       return '10';
+    }
+  });
+  // Tab 2: Dari Kunci Jawaban
+  const [promptAnswersSubject, setPromptAnswersSubject] = useState(() => {
+    try {
+      return localStorage.getItem('tts_prompt_answers_subject') ?? '';
+    } catch {
+      return '';
+    }
+  });
+  const [promptAnswersList, setPromptAnswersList] = useState(() => {
+    try {
+      return localStorage.getItem('tts_prompt_answers_list') ?? '';
+    } catch {
+      return '';
     }
   });
 
@@ -199,11 +222,14 @@ export const WorksheetGenerator: React.FC = () => {
       localStorage.setItem('tts_maker_raw_words2', rawWords2);
       localStorage.setItem('tts_maker_seed2', seed2.toString());
       localStorage.setItem('tts_maker_show_key', showAnswerKey.toString());
+      localStorage.setItem('tts_prompt_active_tab', promptActiveTab);
       localStorage.setItem('tts_show_prompt_maker', showPromptMaker.toString());
       localStorage.setItem('tts_prompt_subject', promptSubject);
       localStorage.setItem('tts_prompt_grade', promptGrade);
       localStorage.setItem('tts_prompt_topic', promptTopic);
       localStorage.setItem('tts_prompt_count', promptCount);
+      localStorage.setItem('tts_prompt_answers_subject', promptAnswersSubject);
+      localStorage.setItem('tts_prompt_answers_list', promptAnswersList);
     } catch (e) {
       console.warn('Failed to save state to localStorage', e);
     }
@@ -217,11 +243,14 @@ export const WorksheetGenerator: React.FC = () => {
     rawWords2,
     seed2,
     showAnswerKey,
+    promptActiveTab,
     showPromptMaker,
     promptSubject,
     promptGrade,
     promptTopic,
     promptCount,
+    promptAnswersSubject,
+    promptAnswersList,
   ]);
 
   const handleClearInputs = () => {
@@ -248,7 +277,8 @@ export const WorksheetGenerator: React.FC = () => {
     setToast({ type: 'success', message: `Form isian ${activeEditorTab === 'tts1' ? 'TTS 1' : 'TTS 2'} berhasil dikosongkan.` });
   };
 
-  const generatedPrompt = useMemo(() => {
+  // Prompt Tab 1: Dari Materi
+  const generatedPromptTab1 = useMemo(() => {
     const subject = promptSubject.trim() || '...';
     const grade = promptGrade.trim() || '....';
     const topic = promptTopic.trim() || '.......';
@@ -257,14 +287,24 @@ export const WorksheetGenerator: React.FC = () => {
     return `Jadilah Ahli dalam membuat Jawaban dan soal TTS mata pelajaran ${subject} kelas ${grade}. Buatkan soal dan jawaban untuk dijadikan teka teki silang dengan jawaban hanya berupa satu kata atau istilah penting untuk materi ${topic}. Dengan format JAWABAN[spasi]PETUNJUK atau SOAL, buat agar satu soal per baris. sebanyak ${count} butir, tanpa nomor dan mudah di copy. spasi artinya spasi, bukan kata spasi.`;
   }, [promptSubject, promptGrade, promptTopic, promptCount]);
 
+  // Prompt Tab 2: Dari Kunci Jawaban Satu Kata (dipisahkan koma)
+  const generatedPromptTab2 = useMemo(() => {
+    const subject = (promptAnswersSubject.trim() || promptSubject.trim()) || '....';
+    const answers = promptAnswersList.trim() || '.......';
+
+    return `Jadilah Ahli dalam membuat soal TTS mata pelajaran ${subject} untuk jawaban berikut ${answers} . Dengan format JAWABAN[spasi]PETUNJUK atau SOAL, buat agar satu soal per baris, tanpa nomor dan mudah di copy. spasi artinya spasi, bukan kata spasi.`;
+  }, [promptAnswersSubject, promptSubject, promptAnswersList]);
+
+  const currentActivePrompt = promptActiveTab === 'topic' ? generatedPromptTab1 : generatedPromptTab2;
+
   const handleCopyPrompt = async () => {
     try {
-      await navigator.clipboard.writeText(generatedPrompt);
+      await navigator.clipboard.writeText(currentActivePrompt);
       setCopiedPrompt(true);
       setTimeout(() => setCopiedPrompt(false), 2000);
     } catch {
       const textArea = document.createElement('textarea');
-      textArea.value = generatedPrompt;
+      textArea.value = currentActivePrompt;
       document.body.appendChild(textArea);
       textArea.select();
       document.execCommand('copy');
@@ -819,60 +859,122 @@ export const WorksheetGenerator: React.FC = () => {
 
           {showPromptMaker && (
             <div className="p-3.5 sm:p-4 space-y-3 animate-in fade-in duration-150">
-              {/* Kolom Input: Mata Pelajaran, Jenjang/Kelas, Materi Pelajaran, Jumlah Soal */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
-                <div>
-                  <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                    Mata Pelajaran :
-                  </label>
-                  <input
-                    type="text"
-                    value={promptSubject}
-                    onChange={(e) => setPromptSubject(e.target.value)}
-                    placeholder="Mata pelajaran..."
-                    className="w-full px-3 py-2 text-xs rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition shadow-2xs"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                    Jenjang / Kelas :
-                  </label>
-                  <input
-                    type="text"
-                    value={promptGrade}
-                    onChange={(e) => setPromptGrade(e.target.value)}
-                    placeholder="Jenjang / kelas..."
-                    className="w-full px-3 py-2 text-xs rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition shadow-2xs"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                    Materi Pelajaran :
-                  </label>
-                  <input
-                    type="text"
-                    value={promptTopic}
-                    onChange={(e) => setPromptTopic(e.target.value)}
-                    placeholder="Materi pelajaran..."
-                    className="w-full px-3 py-2 text-xs rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition shadow-2xs"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                    Jumlah Soal :
-                  </label>
-                  <input
-                    type="text"
-                    value={promptCount}
-                    onChange={(e) => setPromptCount(e.target.value)}
-                    placeholder="Jumlah soal..."
-                    className="w-full px-3 py-2 text-xs rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition shadow-2xs"
-                  />
-                </div>
+              {/* Tab Selector: Dari Materi vs Dari Kunci Jawaban */}
+              <div className="flex bg-neutral-200/80 dark:bg-neutral-800 p-1 rounded-lg gap-1 border border-neutral-300/60 dark:border-neutral-700">
+                <button
+                  type="button"
+                  onClick={() => setPromptActiveTab('topic')}
+                  className={`flex-1 py-1.5 px-3 rounded-md text-xs font-bold transition cursor-pointer text-center ${
+                    promptActiveTab === 'topic'
+                      ? 'bg-white dark:bg-neutral-900 text-teal-800 dark:text-teal-300 shadow-2xs'
+                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                  }`}
+                >
+                  Dari Materi
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPromptActiveTab('answers')}
+                  className={`flex-1 py-1.5 px-3 rounded-md text-xs font-bold transition cursor-pointer text-center ${
+                    promptActiveTab === 'answers'
+                      ? 'bg-white dark:bg-neutral-900 text-teal-800 dark:text-teal-300 shadow-2xs'
+                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                  }`}
+                >
+                  Dari Kunci Jawaban
+                </button>
               </div>
+
+              {/* Tab 1: Berdasarkan Materi */}
+              {promptActiveTab === 'topic' && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 animate-in fade-in duration-150">
+                  <div>
+                    <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
+                      Mata Pelajaran :
+                    </label>
+                    <input
+                      type="text"
+                      value={promptSubject}
+                      onChange={(e) => setPromptSubject(e.target.value)}
+                      placeholder="Mata pelajaran..."
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:outline-none transition shadow-2xs"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
+                      Jenjang / Kelas :
+                    </label>
+                    <input
+                      type="text"
+                      value={promptGrade}
+                      onChange={(e) => setPromptGrade(e.target.value)}
+                      placeholder="Jenjang / kelas..."
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:outline-none transition shadow-2xs"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
+                      Materi Pelajaran :
+                    </label>
+                    <input
+                      type="text"
+                      value={promptTopic}
+                      onChange={(e) => setPromptTopic(e.target.value)}
+                      placeholder="Materi pelajaran..."
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:outline-none transition shadow-2xs"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
+                      Jumlah Soal :
+                    </label>
+                    <input
+                      type="text"
+                      value={promptCount}
+                      onChange={(e) => setPromptCount(e.target.value)}
+                      placeholder="Jumlah soal..."
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:outline-none transition shadow-2xs"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Tab 2: Berdasarkan Jawaban Satu Kata (Dipisahkan dengan Koma) */}
+              {promptActiveTab === 'answers' && (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 animate-in fade-in duration-150">
+                  <div className="sm:col-span-1">
+                    <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
+                      Mata Pelajaran :
+                    </label>
+                    <input
+                      type="text"
+                      value={promptAnswersSubject || promptSubject}
+                      onChange={(e) => {
+                        setPromptAnswersSubject(e.target.value);
+                        if (!promptSubject) setPromptSubject(e.target.value);
+                      }}
+                      placeholder="Mata pelajaran..."
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:outline-none transition shadow-2xs"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
+                      Jawaban Satu Kata (pisahkan dengan koma) :
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={promptAnswersList}
+                      onChange={(e) => setPromptAnswersList(e.target.value)}
+                      placeholder="Contoh: MITOKONDRIA, NUKLEUS, SITOPLASMA, RIBOSOM, VAKUOLA"
+                      className="w-full px-3 py-1.5 text-xs rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:outline-none transition shadow-2xs resize-none"
+                    />
+                  </div>
+                </div>
+              )}
 
               {/* Hasil Prompt Jadi Siap Tempel */}
               <div className="space-y-1.5 pt-1">
@@ -887,7 +989,7 @@ export const WorksheetGenerator: React.FC = () => {
                       className={`inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg font-bold text-xs cursor-pointer transition shadow-2xs ${
                         copiedPrompt
                           ? 'bg-emerald-600 text-white'
-                          : 'bg-blue-600 hover:bg-blue-700 text-white'
+                          : 'bg-teal-600 hover:bg-teal-700 text-white'
                       }`}
                     >
                       {copiedPrompt ? (
@@ -916,7 +1018,7 @@ export const WorksheetGenerator: React.FC = () => {
                 </div>
 
                 <div className="p-3 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-300 dark:border-neutral-700 text-neutral-800 dark:text-neutral-200 font-mono text-[11px] sm:text-xs leading-relaxed select-all break-words">
-                  {generatedPrompt}
+                  {currentActivePrompt}
                 </div>
               </div>
             </div>
