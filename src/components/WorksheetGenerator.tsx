@@ -22,6 +22,7 @@ import {
   LayoutGrid,
   CopyCheck,
   SplitSquareVertical,
+  Share2,
 } from 'lucide-react';
 import { generateCrossword, parseRawInput, findOptimalSeedForLayout } from '../utils/crosswordGenerator';
 import { CrosswordLayout } from '../types';
@@ -629,6 +630,40 @@ export const WorksheetGenerator: React.FC = () => {
     }
   };
 
+  /**
+   * Bagikan dokumen ke WhatsApp (via Web Share API file sharing jika didukung di HP/Browser,
+   * atau fallback langsung ke WhatsApp).
+   */
+  const handleShareToWhatsApp = async () => {
+    if (!exportModal.url) return;
+
+    try {
+      const response = await fetch(exportModal.url);
+      const blob = await response.blob();
+      const mimeType = exportModal.type === 'pdf' ? 'application/pdf' : 'image/png';
+      const file = new File([blob], exportModal.fileName, { type: mimeType });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: exportModal.fileName,
+          text: `Lembar TTS: ${title || 'Teka-Teki Silang'}`,
+        });
+        return;
+      }
+    } catch (err) {
+      if ((err as Error).name === 'AbortError') {
+        return;
+      }
+      console.warn('Web Share file tidak didukung:', err);
+    }
+
+    const textMsg = encodeURIComponent(
+      `Halo, ini dokumen ${exportModal.type === 'pdf' ? 'PDF' : 'Gambar'} Teka-Teki Silang: *${title || 'TTS'}* (${exportModal.fileName})`
+    );
+    window.open(`https://api.whatsapp.com/send?text=${textMsg}`, '_blank');
+  };
+
   const currentTitle = activeEditorTab === 'tts1' ? title : title2;
   const setCurrentTitle = (val: string) => {
     if (activeEditorTab === 'tts1') setTitle(val);
@@ -979,7 +1014,7 @@ export const WorksheetGenerator: React.FC = () => {
       {/* Pratinjau Lembar Kerja (Worksheet) - Responsive WYSIWYG Container */}
       <div className="w-full flex flex-col items-center">
         {/* WYSIWYG Header Bar */}
-        <div className="print:hidden w-full max-w-[794px] flex flex-wrap items-center justify-between gap-2.5 px-2 mb-3 text-xs text-neutral-500 dark:text-neutral-400">
+        <div className="print:hidden w-full max-w-[794px] flex flex-wrap items-center justify-between gap-2.5 px-3 py-2 mb-3 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-sm rounded-xl border border-teal-800/15 dark:border-neutral-800 shadow-sm text-xs text-neutral-600 dark:text-neutral-400">
           <div className="flex items-center flex-wrap gap-2">
             <span className="font-bold text-neutral-900 dark:text-white text-sm">
               Pratinjau
@@ -1392,61 +1427,37 @@ export const WorksheetGenerator: React.FC = () => {
               </div>
             )}
 
-            {/* Tombol Aksi Proporsional */}
-            {exportModal.type === 'pdf' ? (
-              <div className="grid grid-cols-3 gap-2 pt-1">
-                <a
-                  href={exportModal.url}
-                  download={exportModal.fileName}
-                  className="h-9 px-2.5 bg-teal-600 hover:bg-teal-700 active:bg-teal-800 text-white font-bold rounded-xl text-xs transition flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs text-center"
-                  title="Unduh PDF"
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>Unduh</span>
-                </a>
-                <a
-                  href={exportModal.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="h-9 px-2.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 font-semibold rounded-xl text-xs transition flex items-center justify-center gap-1.5 cursor-pointer text-center"
-                  title="Buka PDF"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  <span>Buka</span>
-                </a>
-                <button
-                  type="button"
-                  onClick={() => window.print()}
-                  className="h-9 px-2.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 font-semibold rounded-xl text-xs transition flex items-center justify-center gap-1.5 cursor-pointer text-center"
-                  title="Cetak PDF"
-                >
-                  <Printer className="w-3.5 h-3.5" />
-                  <span>Cetak</span>
-                </button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-2 pt-1">
-                <a
-                  href={exportModal.url}
-                  download={exportModal.fileName}
-                  className="h-9 px-3 bg-teal-600 hover:bg-teal-700 active:bg-teal-800 text-white font-bold rounded-xl text-xs transition flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs text-center"
-                  title="Unduh Gambar"
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>Unduh</span>
-                </a>
-                <a
-                  href={exportModal.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="h-9 px-3 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 font-semibold rounded-xl text-xs transition flex items-center justify-center gap-1.5 cursor-pointer text-center"
-                  title="Buka Gambar"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  <span>Buka</span>
-                </a>
-              </div>
-            )}
+            {/* Tombol Aksi Proporsional: Unduh Ulang, Buka, Bagikan ke WhatsApp */}
+            <div className="grid grid-cols-3 gap-2 pt-1">
+              <a
+                href={exportModal.url}
+                download={exportModal.fileName}
+                className="h-9 px-1.5 sm:px-2 bg-teal-600 hover:bg-teal-700 active:bg-teal-800 text-white font-bold rounded-xl text-xs transition flex items-center justify-center gap-1 cursor-pointer shadow-2xs text-center"
+                title="Unduh Ulang Dokumen"
+              >
+                <Download className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">Unduh Ulang</span>
+              </a>
+              <a
+                href={exportModal.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="h-9 px-1.5 sm:px-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 font-semibold rounded-xl text-xs transition flex items-center justify-center gap-1 cursor-pointer text-center"
+                title="Buka di Tab Baru"
+              >
+                <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+                <span>Buka</span>
+              </a>
+              <button
+                type="button"
+                onClick={handleShareToWhatsApp}
+                className="h-9 px-1.5 sm:px-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold rounded-xl text-xs transition flex items-center justify-center gap-1 cursor-pointer shadow-2xs text-center"
+                title="Bagikan ke WhatsApp"
+              >
+                <Share2 className="w-3.5 h-3.5 shrink-0" />
+                <span>Bagikan</span>
+              </button>
+            </div>
           </div>
         </div>
       )}

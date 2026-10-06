@@ -3,7 +3,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 body {
-  background-color: #e6f5f3;
+  background-color: #0d9488;
   color: #0f172a;
 }
 
