@@ -17,11 +17,11 @@ export const PWAInstallButton: React.FC = () => {
       <button
         type="button"
         onClick={install}
-        className="flex items-center gap-1.5 rounded-lg bg-teal-600 hover:bg-teal-700 active:bg-teal-800 px-3 py-1.5 text-xs font-bold text-white shadow-xs transition cursor-pointer"
+        className="flex items-center gap-1.5 rounded-lg bg-teal-600 hover:bg-teal-700 active:bg-teal-800 px-2.5 sm:px-3 py-1.5 text-xs font-bold text-white shadow-xs transition cursor-pointer whitespace-nowrap shrink-0"
         title="Pasang Aplikasi TTS ke Layar Utama"
       >
         <Download className="w-3.5 h-3.5" />
-        <span>Install App</span>
+        <span>INSTAL</span>
       </button>
     );
   }
@@ -33,11 +33,11 @@ export const PWAInstallButton: React.FC = () => {
         <button
           type="button"
           onClick={() => setShowIOSGuide(true)}
-          className="flex items-center gap-1.5 rounded-lg border border-teal-600/30 bg-teal-50 dark:bg-neutral-800 px-2.5 py-1 text-xs font-semibold text-teal-800 dark:text-teal-200 hover:bg-teal-100 transition cursor-pointer"
+          className="flex items-center gap-1.5 rounded-lg border border-teal-600/30 bg-teal-50 dark:bg-neutral-800 px-2.5 py-1.5 text-xs font-bold text-teal-800 dark:text-teal-200 hover:bg-teal-100 transition cursor-pointer whitespace-nowrap shrink-0"
           title="Petunjuk Pasang di iPhone/iPad"
         >
           <PlusSquare className="w-3.5 h-3.5 text-teal-600" />
-          <span>Pasang</span>
+          <span>INSTAL</span>
         </button>
 
         {showIOSGuide && (
