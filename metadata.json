@@ -1,0 +1,8 @@
+{
+  "name": "TTS MAKER By MGMP IPA Kec. Bengkalis",
+  "description": "Generator teka-teki silang otomatis untuk semua mata pelajaran yang dapat diekspor ke gambar PNG dan dicetak ke PDF untuk lembar kerja siswa.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
