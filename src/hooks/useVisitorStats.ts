@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import {
   doc,
   setDoc,
+  getDoc,
+  getDocs,
   increment,
-  onSnapshot,
   serverTimestamp,
   deleteDoc,
   collection,
@@ -24,6 +25,8 @@ export function useVisitorStats(): VisitorStats {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
+    let isMounted = true;
+
     // 1. Get or create session ID for online presence
     let sessionId = sessionStorage.getItem('tts_session_id');
     if (!sessionId) {
@@ -55,7 +58,7 @@ export function useVisitorStats(): VisitorStats {
         });
     }
 
-    // 3. Online Presence Heartbeat
+    // 3. Online Presence Heartbeat (every 30 seconds)
     const sendHeartbeat = () => {
       setDoc(
         presenceDocRef,
@@ -69,60 +72,64 @@ export function useVisitorStats(): VisitorStats {
     };
 
     sendHeartbeat();
-    const heartbeatInterval = setInterval(sendHeartbeat, 20000); // heartbeat every 20s
+    const heartbeatInterval = setInterval(sendHeartbeat, 30000);
 
-    // 4. Realtime Listener for Total and Today Visitors
-    const unsubscribeStats = onSnapshot(
-      statsDocRef,
-      (snapshot) => {
-        if (snapshot.exists()) {
-          const data = snapshot.data();
-          if (data.todayDate === todayStr) {
-            setTodayVisitors(data.todayVisitors || 0);
+    // 4. Fetch Stats (Total & Today Visitors) periodically every 60 seconds
+    const fetchStats = async () => {
+      try {
+        const snap = await getDoc(statsDocRef);
+        if (isMounted) {
+          if (snap.exists()) {
+            const data = snap.data();
+            if (data.todayDate === todayStr) {
+              setTodayVisitors(data.todayVisitors || 1);
+            } else {
+              setTodayVisitors(1);
+            }
+            setTotalVisitors(data.totalVisitors || 1);
           } else {
+            setTotalVisitors(1);
             setTodayVisitors(1);
           }
-          setTotalVisitors(data.totalVisitors || 0);
-        } else {
-          // Initialize if document does not exist yet
-          setDoc(statsDocRef, {
-            totalVisitors: 1,
-            todayVisitors: 1,
-            todayDate: todayStr,
-          }, { merge: true }).catch(() => {});
+          setIsLoading(false);
         }
-        setIsLoading(false);
-      },
-      (err) => {
-        console.warn('Stats snapshot error:', err);
-        setIsLoading(false);
+      } catch (err) {
+        console.warn('Error fetching visitor stats:', err);
+        if (isMounted) setIsLoading(false);
       }
-    );
+    };
 
-    // 5. Realtime Listener for Online Presence Count
-    const presenceColRef = collection(db, 'presence');
-    const unsubscribePresence = onSnapshot(
-      presenceColRef,
-      (snapshot) => {
-        const now = Date.now();
-        let activeUsers = 0;
-        snapshot.forEach((d) => {
-          const pData = d.data();
-          if (pData.updatedAt && now - pData.updatedAt < 60000) {
-            activeUsers++;
-          }
-        });
-        setOnlineCount(Math.max(1, activeUsers));
-      },
-      (err) => {
-        console.warn('Presence snapshot error:', err);
+    fetchStats();
+    const statsInterval = setInterval(fetchStats, 60000);
+
+    // 5. Fetch Online Presence Count periodically every 30 seconds
+    const fetchPresence = async () => {
+      try {
+        const snap = await getDocs(collection(db, 'presence'));
+        if (isMounted) {
+          const now = Date.now();
+          let activeUsers = 0;
+          snap.forEach((d) => {
+            const pData = d.data();
+            if (pData.updatedAt && now - pData.updatedAt < 75000) {
+              activeUsers++;
+            }
+          });
+          setOnlineCount(Math.max(1, activeUsers));
+        }
+      } catch (err) {
+        console.warn('Error fetching presence:', err);
       }
-    );
+    };
+
+    fetchPresence();
+    const presenceInterval = setInterval(fetchPresence, 30000);
 
     return () => {
+      isMounted = false;
       clearInterval(heartbeatInterval);
-      unsubscribeStats();
-      unsubscribePresence();
+      clearInterval(statsInterval);
+      clearInterval(presenceInterval);
       deleteDoc(presenceDocRef).catch(() => {});
     };
   }, []);
