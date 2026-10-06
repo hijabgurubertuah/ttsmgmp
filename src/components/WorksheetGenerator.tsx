@@ -286,7 +286,7 @@ export const WorksheetGenerator: React.FC = () => {
     const topic = promptTopic.trim() || '.......';
     const count = promptCount.trim() || '...';
 
-    return `Jadilah Ahli dalam membuat Jawaban dan soal TTS mata pelajaran ${subject} kelas ${grade}. Buatkan soal dan jawaban untuk dijadikan teka teki silang dengan jawaban hanya berupa satu kata atau istilah penting untuk materi ${topic}. Dengan format JAWABAN[spasi]PETUNJUK atau SOAL, buat agar satu soal per baris. sebanyak ${count} butir, tanpa nomor dan mudah di copy. spasi artinya spasi, bukan kata spasi.`;
+    return `Jadilah Ahli dalam membuat Jawaban dan soal TTS mata pelajaran ${subject} kelas ${grade}. Buatkan soal dan jawaban untuk dijadikan teka teki silang dengan jawaban hanya berupa satu kata atau istilah penting untuk materi ${topic}. Dengan format JAWABAN[spasi]PETUNJUK atau SOAL, buat agar satu soal per baris. sebanyak ${count} butir, tanpa nomor dan mudah di copy. spasi artinya spasi, bukan kata spasi, tidak ada spasi di awal jawaban.`;
   }, [promptSubject, promptGrade, promptTopic, promptCount]);
 
   // Prompt Tab 2: Dari Kunci Jawaban Satu Kata (dipisahkan koma)
@@ -294,7 +294,7 @@ export const WorksheetGenerator: React.FC = () => {
     const subject = (promptAnswersSubject.trim() || promptSubject.trim()) || '....';
     const answers = promptAnswersList.trim() || '.......';
 
-    return `Jadilah Ahli dalam membuat soal TTS mata pelajaran ${subject} untuk jawaban berikut ${answers} . Dengan format JAWABAN[spasi]PETUNJUK atau SOAL, buat agar satu soal per baris, tanpa nomor dan mudah di copy. spasi artinya spasi, bukan kata spasi.`;
+    return `Jadilah Ahli dalam membuat soal TTS mata pelajaran ${subject} untuk jawaban berikut ${answers} . Dengan format JAWABAN[spasi]PETUNJUK atau SOAL, buat agar satu soal per baris, tanpa nomor dan mudah di copy. spasi artinya spasi, bukan kata spasi, tidak ada spasi di awal jawaban.`;
   }, [promptAnswersSubject, promptSubject, promptAnswersList]);
 
   const currentActivePrompt = promptActiveTab === 'topic' ? generatedPromptTab1 : generatedPromptTab2;
@@ -780,70 +780,8 @@ export const WorksheetGenerator: React.FC = () => {
         </div>
       )}
 
-      {/* Input Card: Judul dan Daftar Kata Jawaban (Hidden when printing) */}
-      <div className="print:hidden bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 md:p-6 shadow-sm space-y-4">
-        {/* Sub-options for 2-per-page if active: Normal vs 2 TTS Berbeda */}
-        {printLayout === '2_per_page' && (
-          <div className="p-2.5 bg-neutral-50 dark:bg-neutral-800/60 rounded-xl border border-neutral-200 dark:border-neutral-700/80 space-y-2 animate-in fade-in">
-            {/* Row 1: Normal vs 2 TTS Berbeda (Balanced Grid on Mobile & Desktop) */}
-            <div className="grid grid-cols-2 gap-2 w-full">
-              <button
-                type="button"
-                onClick={() => setTwoPerPageSource('same')}
-                className={`w-full py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer text-center ${
-                  twoPerPageSource === 'same'
-                    ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-xs'
-                    : 'bg-white dark:bg-neutral-900 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 border border-neutral-200 dark:border-neutral-700'
-                }`}
-              >
-                <CopyCheck className="w-3.5 h-3.5 shrink-0" />
-                <span className="truncate">Normal</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setTwoPerPageSource('different')}
-                className={`w-full py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer text-center ${
-                  twoPerPageSource === 'different'
-                    ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-xs'
-                    : 'bg-white dark:bg-neutral-900 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 border border-neutral-200 dark:border-neutral-700'
-                }`}
-              >
-                <SplitSquareVertical className="w-3.5 h-3.5 shrink-0" />
-                <span className="truncate">2 TTS Berbeda</span>
-              </button>
-            </div>
-
-            {/* Row 2: TTS 1 (Atas) vs TTS 2 (Bawah) (Balanced Grid on Mobile & Desktop) */}
-            {twoPerPageSource === 'different' && (
-              <div className="grid grid-cols-2 gap-2 w-full pt-1.5 border-t border-neutral-200 dark:border-neutral-700/70">
-                <button
-                  type="button"
-                  onClick={() => setActiveEditorTab('tts1')}
-                  className={`w-full py-2 px-3 rounded-lg text-xs font-bold cursor-pointer transition text-center ${
-                    activeEditorTab === 'tts1'
-                      ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-xs'
-                      : 'bg-white dark:bg-neutral-900 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 border border-neutral-200 dark:border-neutral-700'
-                  }`}
-                >
-                  TTS 1 (Atas)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveEditorTab('tts2')}
-                  className={`w-full py-2 px-3 rounded-lg text-xs font-bold cursor-pointer transition text-center ${
-                    activeEditorTab === 'tts2'
-                      ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-xs'
-                      : 'bg-white dark:bg-neutral-900 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 border border-neutral-200 dark:border-neutral-700'
-                  }`}
-                >
-                  TTS 2 (Bawah)
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Pembuat Prompt ChatGPT (Menggantikan Kolom Petunjuk, Minimalis Tanpa Petunjuk di UI) */}
+      {/* Card 1: Pembuat Prompt ChatGPT (Terpisah) */}
+      <div className="print:hidden bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-4 sm:p-5 shadow-sm">
         <div className="w-full bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 rounded-xl overflow-hidden transition-all shadow-2xs">
           <button
             type="button"
@@ -1027,7 +965,70 @@ export const WorksheetGenerator: React.FC = () => {
             </div>
           )}
         </div>
+      </div>
 
+      {/* Card 2: Judul dan Daftar Kata Jawaban (Terpisah) */}
+      <div className="print:hidden bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 md:p-6 shadow-sm space-y-4">
+        {/* Sub-options for 2-per-page if active: Normal vs 2 TTS Berbeda */}
+        {printLayout === '2_per_page' && (
+          <div className="p-2.5 bg-neutral-50 dark:bg-neutral-800/60 rounded-xl border border-neutral-200 dark:border-neutral-700/80 space-y-2 animate-in fade-in">
+            {/* Row 1: Normal vs 2 TTS Berbeda (Balanced Grid on Mobile & Desktop) */}
+            <div className="grid grid-cols-2 gap-2 w-full">
+              <button
+                type="button"
+                onClick={() => setTwoPerPageSource('same')}
+                className={`w-full py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer text-center ${
+                  twoPerPageSource === 'same'
+                    ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-xs'
+                    : 'bg-white dark:bg-neutral-900 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 border border-neutral-200 dark:border-neutral-700'
+                }`}
+              >
+                <CopyCheck className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">Normal</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setTwoPerPageSource('different')}
+                className={`w-full py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer text-center ${
+                  twoPerPageSource === 'different'
+                    ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-xs'
+                    : 'bg-white dark:bg-neutral-900 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 border border-neutral-200 dark:border-neutral-700'
+                }`}
+              >
+                <SplitSquareVertical className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">2 TTS Berbeda</span>
+              </button>
+            </div>
+
+            {/* Row 2: TTS 1 (Atas) vs TTS 2 (Bawah) (Balanced Grid on Mobile & Desktop) */}
+            {twoPerPageSource === 'different' && (
+              <div className="grid grid-cols-2 gap-2 w-full pt-1.5 border-t border-neutral-200 dark:border-neutral-700/70">
+                <button
+                  type="button"
+                  onClick={() => setActiveEditorTab('tts1')}
+                  className={`w-full py-2 px-3 rounded-lg text-xs font-bold cursor-pointer transition text-center ${
+                    activeEditorTab === 'tts1'
+                      ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-xs'
+                      : 'bg-white dark:bg-neutral-900 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 border border-neutral-200 dark:border-neutral-700'
+                  }`}
+                >
+                  TTS 1 (Atas)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveEditorTab('tts2')}
+                  className={`w-full py-2 px-3 rounded-lg text-xs font-bold cursor-pointer transition text-center ${
+                    activeEditorTab === 'tts2'
+                      ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-xs'
+                      : 'bg-white dark:bg-neutral-900 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 border border-neutral-200 dark:border-neutral-700'
+                  }`}
+                >
+                  TTS 2 (Bawah)
+                </button>
+              </div>
+            )}
+          </div>
+        )}
         <div>
           <div className="flex items-center justify-between mb-1.5">
             <label className="block text-sm font-bold text-neutral-800 dark:text-neutral-200">
