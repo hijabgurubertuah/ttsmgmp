@@ -116,6 +116,7 @@ export const WorksheetGenerator: React.FC = () => {
   const [exportSuccess, setExportSuccess] = useState(false);
   const [isExportingPdf, setIsExportingPdf] = useState(false);
   const [pdfSuccess, setPdfSuccess] = useState(false);
+  const [activeExporting, setActiveExporting] = useState<'pdf_soal' | 'pdf_key' | 'image_soal' | 'image_key' | null>(null);
   const [copiedPrompt, setCopiedPrompt] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
 
@@ -557,7 +558,9 @@ export const WorksheetGenerator: React.FC = () => {
       return;
     }
 
+    const exportType = isKey ? 'image_key' : 'image_soal';
     try {
+      setActiveExporting(exportType);
       setIsExporting(true);
       const dataUrl = await captureWorksheetToPng(isKey);
       const fileName = getSafeFileName(isKey, 'png');
@@ -600,6 +603,7 @@ export const WorksheetGenerator: React.FC = () => {
       });
     } finally {
       setIsExporting(false);
+      setActiveExporting(null);
     }
   };
 
@@ -615,7 +619,9 @@ export const WorksheetGenerator: React.FC = () => {
       return;
     }
 
+    const exportType = isKey ? 'pdf_key' : 'pdf_soal';
     try {
+      setActiveExporting(exportType);
       setIsExportingPdf(true);
       const dataUrl = await captureWorksheetToPng(isKey);
       const fileName = getSafeFileName(isKey, 'pdf');
@@ -667,6 +673,7 @@ export const WorksheetGenerator: React.FC = () => {
       });
     } finally {
       setIsExportingPdf(false);
+      setActiveExporting(null);
     }
   };
 
@@ -977,48 +984,43 @@ export const WorksheetGenerator: React.FC = () => {
               )}
 
               {/* Hasil Prompt Jadi Siap Tempel */}
-              <div className="space-y-1.5 pt-1">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
-                    Prompt Jadi :
-                  </span>
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      type="button"
-                      onClick={handleCopyPrompt}
-                      className={`inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg font-bold text-xs cursor-pointer transition shadow-2xs ${
-                        copiedPrompt
-                          ? 'bg-emerald-600 text-white'
-                          : 'bg-teal-600 hover:bg-teal-700 text-white'
-                      }`}
-                    >
-                      {copiedPrompt ? (
-                        <>
-                          <Check className="w-3.5 h-3.5" />
-                          <span>Tersalin!</span>
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-3.5 h-3.5" />
-                          <span>Salin Prompt</span>
-                        </>
-                      )}
-                    </button>
-                    <a
-                      href="https://chatgpt.com/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg font-medium text-xs text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition"
-                      title="Buka ChatGPT di tab baru"
-                    >
-                      <ExternalLink className="w-3.5 h-3.5" />
-                      <span>BUKA ChatGPT</span>
-                    </a>
-                  </div>
-                </div>
-
+              <div className="space-y-2 pt-1">
                 <div className="p-3 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-300 dark:border-neutral-700 text-neutral-800 dark:text-neutral-200 font-mono text-[11px] sm:text-xs leading-relaxed select-all break-words">
                   {currentActivePrompt}
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={handleCopyPrompt}
+                    className={`h-9 px-3 rounded-lg font-bold text-xs cursor-pointer transition shadow-2xs flex items-center justify-center gap-1.5 text-center ${
+                      copiedPrompt
+                        ? 'bg-emerald-600 text-white'
+                        : 'bg-teal-600 hover:bg-teal-700 text-white'
+                    }`}
+                  >
+                    {copiedPrompt ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 shrink-0" />
+                        <span>Tersalin!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5 shrink-0" />
+                        <span>Salin Prompt</span>
+                      </>
+                    )}
+                  </button>
+                  <a
+                    href="https://chatgpt.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="h-9 px-3 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-800 dark:text-neutral-200 font-semibold rounded-lg text-xs transition flex items-center justify-center gap-1.5 text-center"
+                    title="Buka ChatGPT di tab baru"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+                    <span>BUKA ChatGPT</span>
+                  </a>
                 </div>
               </div>
             </div>
@@ -1100,7 +1102,7 @@ export const WorksheetGenerator: React.FC = () => {
             onFocus={() => adjustTextareaHeight()}
             rows={4}
             wrap="off"
-            placeholder="JAWABAN Petunjuk pertanyaan...&#10;JAWABAN2 Petunjuk pertanyaan kedua..."
+            placeholder="Tempelkan Disini Hasil dari ChatGPT&#10;JAWABAN Petunjuk Pertanyaan...&#10;JAWABAN2 Petunjuk Pertanyaan kedua..."
             className="w-full font-mono text-xs md:text-sm p-3.5 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 text-neutral-900 dark:text-white focus:ring-2 focus:ring-amber-500 focus:outline-none leading-relaxed shadow-2xs whitespace-pre overflow-x-auto overflow-y-hidden resize-none"
             style={{ minHeight: '100px' }}
           />
@@ -1420,62 +1422,64 @@ export const WorksheetGenerator: React.FC = () => {
       </div>
 
       {/* Action Bar: Tombol Ekspor Utama */}
-      <div className="print:hidden w-full max-w-[794px] mx-auto bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-3.5 sm:p-4 rounded-2xl shadow-md">
-        {/* Export Action Buttons */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-          {/* Tombol Ekspor PDF */}
-          <div className="flex rounded-xl overflow-hidden shadow-xs border border-neutral-300 dark:border-neutral-700">
+      <div className="print:hidden w-full max-w-[794px] mx-auto bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-3 sm:p-4 rounded-2xl shadow-md">
+        {/* Export Action Buttons: Sejajar 1 Baris di HP & Warna Toska (Tanpa Ikon) */}
+        <div className="space-y-2 sm:space-y-2.5">
+          {/* Kelompok PDF (Sejajar 1 Baris) */}
+          <div className="grid grid-cols-2 gap-2 sm:gap-2.5">
             <button
               type="button"
               onClick={() => handleExportPdf(false)}
-              disabled={isExportingPdf}
-              className="flex-1 h-11 px-3 bg-neutral-900 hover:bg-black active:scale-[0.98] text-white dark:bg-neutral-100 dark:hover:bg-white dark:text-neutral-950 font-bold transition flex items-center justify-center gap-1.5 text-xs cursor-pointer disabled:opacity-60 border-r border-neutral-700 dark:border-neutral-300"
+              disabled={!!activeExporting}
+              className="h-11 px-1.5 sm:px-3 bg-teal-600 hover:bg-teal-700 active:bg-teal-800 text-white font-bold rounded-xl shadow-2xs transition flex items-center justify-center gap-1.5 text-[11px] sm:text-xs md:text-sm cursor-pointer disabled:opacity-60 border border-teal-700 whitespace-nowrap overflow-hidden text-ellipsis"
               title="Download Lembar Soal (Kosong) dalam format PDF A4"
             >
-              {isExportingPdf && !showAnswerKey ? (
-                <RefreshCw className="w-4 h-4 animate-spin text-teal-400" />
-              ) : (
-                <FileDown className="w-4 h-4" />
+              {activeExporting === 'pdf_soal' && (
+                <RefreshCw className="w-3.5 h-3.5 animate-spin text-white shrink-0" />
               )}
-              <span>Unduh PDF</span>
+              <span className="whitespace-nowrap truncate">Unduh PDF</span>
             </button>
+
             <button
               type="button"
               onClick={() => handleExportPdf(true)}
-              disabled={isExportingPdf}
-              className="px-3.5 h-11 bg-neutral-800 hover:bg-neutral-900 active:scale-[0.98] text-teal-300 dark:bg-neutral-200 dark:hover:bg-neutral-300 dark:text-teal-800 font-bold transition flex items-center justify-center gap-1.5 text-xs cursor-pointer disabled:opacity-60"
+              disabled={!!activeExporting}
+              className="h-11 px-1.5 sm:px-3 bg-teal-700 hover:bg-teal-800 active:bg-teal-900 text-white font-bold rounded-xl shadow-2xs transition flex items-center justify-center gap-1.5 text-[11px] sm:text-xs md:text-sm cursor-pointer disabled:opacity-60 border border-teal-800 whitespace-nowrap overflow-hidden text-ellipsis"
               title="Download Kunci Jawaban (Terisi) dalam format PDF A4"
             >
-              <KeyRound className="w-3.5 h-3.5" />
-              <span>Unduh Kunci</span>
+              {activeExporting === 'pdf_key' && (
+                <RefreshCw className="w-3.5 h-3.5 animate-spin text-white shrink-0" />
+              )}
+              <span className="whitespace-nowrap truncate">Unduh Kunci Jawaban PDF</span>
             </button>
           </div>
 
-          {/* Tombol Ekspor Gambar PNG */}
-          <div className="flex rounded-xl overflow-hidden shadow-xs border border-teal-500/70 dark:border-teal-600">
+          {/* Kelompok Gambar (Sejajar 1 Baris) */}
+          <div className="grid grid-cols-2 gap-2 sm:gap-2.5">
             <button
               type="button"
               onClick={() => handleExportImage(false)}
-              disabled={isExporting}
-              className="flex-1 h-11 px-3 bg-teal-600 hover:bg-teal-700 active:bg-teal-800 active:scale-[0.98] text-white font-bold transition flex items-center justify-center gap-1.5 text-xs cursor-pointer disabled:opacity-60 border-r border-teal-700"
-              title="Download Lembar Soal (Kosong) dalam format Gambar PNG resolusi tinggi"
+              disabled={!!activeExporting}
+              className="h-11 px-1.5 sm:px-3 bg-teal-600 hover:bg-teal-700 active:bg-teal-800 text-white font-bold rounded-xl shadow-2xs transition flex items-center justify-center gap-1.5 text-[11px] sm:text-xs md:text-sm cursor-pointer disabled:opacity-60 border border-teal-700 whitespace-nowrap overflow-hidden text-ellipsis"
+              title="Download Lembar Soal (Kosong) dalam format Gambar PNG"
             >
-              {isExporting && !showAnswerKey ? (
-                <RefreshCw className="w-4 h-4 animate-spin text-white" />
-              ) : (
-                <ImageIcon className="w-4 h-4" />
+              {activeExporting === 'image_soal' && (
+                <RefreshCw className="w-3.5 h-3.5 animate-spin text-white shrink-0" />
               )}
-              <span>Unduh Gambar</span>
+              <span className="whitespace-nowrap truncate">Unduh Gambar</span>
             </button>
+
             <button
               type="button"
               onClick={() => handleExportImage(true)}
-              disabled={isExporting}
-              className="px-3.5 h-11 bg-teal-700 hover:bg-teal-800 active:bg-teal-900 active:scale-[0.98] text-white font-bold transition flex items-center justify-center gap-1.5 text-xs cursor-pointer disabled:opacity-60"
+              disabled={!!activeExporting}
+              className="h-11 px-1.5 sm:px-3 bg-teal-700 hover:bg-teal-800 active:bg-teal-900 text-white font-bold rounded-xl shadow-2xs transition flex items-center justify-center gap-1.5 text-[11px] sm:text-xs md:text-sm cursor-pointer disabled:opacity-60 border border-teal-800 whitespace-nowrap overflow-hidden text-ellipsis"
               title="Download Kunci Jawaban (Terisi) dalam format Gambar PNG"
             >
-              <KeyRound className="w-3.5 h-3.5" />
-              <span>Unduh Kunci</span>
+              {activeExporting === 'image_key' && (
+                <RefreshCw className="w-3.5 h-3.5 animate-spin text-white shrink-0" />
+              )}
+              <span className="whitespace-nowrap truncate">Unduh Kunci Jawaban Gambar</span>
             </button>
           </div>
         </div>
