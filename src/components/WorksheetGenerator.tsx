@@ -28,6 +28,7 @@ import { generateCrossword, parseRawInput, findOptimalSeedForLayout } from '../u
 import { CrosswordLayout } from '../types';
 import { WorksheetPaper } from './WorksheetPaper';
 import { WorksheetPaper2PerPage } from './WorksheetPaper2PerPage';
+import { VisitorFooter } from './VisitorFooter';
 
 export const WorksheetGenerator: React.FC = () => {
   // Layout Cetak State: 1 TTS per halaman A4 vs 2 TTS per halaman A4 (Hemat kertas)
@@ -1484,6 +1485,9 @@ export const WorksheetGenerator: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Footer Statistik Pengunjung & Link External */}
+      <VisitorFooter />
 
       {/* Modal Unduh Minimalis Tanpa Penjelasan di UI */}
       {exportModal.isOpen && (

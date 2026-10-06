@@ -1,0 +1,51 @@
+{
+  "entities": {
+    "StatCounter": {
+      "title": "StatCounter",
+      "description": "Visitor stats for total and daily visitors",
+      "type": "object",
+      "properties": {
+        "totalVisitors": {
+          "type": "number",
+          "description": "Total all-time visitors"
+        },
+        "todayDate": {
+          "type": "string",
+          "description": "Current tracking date (YYYY-MM-DD)"
+        },
+        "todayVisitors": {
+          "type": "number",
+          "description": "Visitors count for today"
+        }
+      },
+      "required": ["totalVisitors", "todayDate", "todayVisitors"]
+    },
+    "Presence": {
+      "title": "Presence",
+      "description": "Online visitor presence session heartbeat",
+      "type": "object",
+      "properties": {
+        "sessionId": {
+          "type": "string",
+          "description": "Unique session ID of active visitor"
+        },
+        "lastSeen": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when visitor was last active"
+        }
+      },
+      "required": ["sessionId", "lastSeen"]
+    }
+  },
+  "firestore": {
+    "/stats/{statId}": {
+      "schema": "StatCounter",
+      "description": "Global statistics document for visitor count"
+    },
+    "/presence/{sessionId}": {
+      "schema": "Presence",
+      "description": "Heartbeat documents for active online users"
+    }
+  }
+}
