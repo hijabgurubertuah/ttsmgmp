@@ -287,61 +287,29 @@ export const WorksheetGenerator: React.FC = () => {
     const count = promptCount.trim() || '...';
     const subjectPart = subject ? ` mata pelajaran ${subject}` : '';
 
-    return `WAJIB membuat tepat ${count} BARIS.
+    return `Buat tepat ${count} baris soal teka-teki untuk materi ${topic}${subjectPart} kelas ${grade}.
 
-TUJUAN UTAMA:
-Hasil akhir HARUS berupa tepat ${count} baris teks yang terpisah secara vertikal.
-Setiap soal HARUS berada pada BARIS BARU yang berbeda.
-Jangan pernah menggabungkan dua soal dalam satu baris.
-
-FORMAT WAJIB SETIAP BARIS:
-JAWABAN PETUNJUK
+FORMAT SETIAP BARIS:
+JAWABAN petunjuk
 
 ATURAN SOAL:
-Setiap baris harus berisi tepat 1 jawaban dan 1 petunjuk.
-Jawaban harus berupa satu kata atau satu istilah penting yang berkaitan dengan materi ${topic}${subjectPart} kelas ${grade}.
-Jawaban tidak boleh terdiri dari dua atau lebih kata.
-Petunjuk harus jelas, singkat, dan sesuai dengan jawaban.
-Setiap soal harus berdiri sendiri dan tidak boleh menyambung dengan soal lain.
+- Satu baris berisi tepat 1 jawaban dan 1 petunjuk.
+- JAWABAN hanya SATU kata, huruf kapital, tanpa spasi, angka, atau tanda baca.
+- Petunjuk ditulis setelah satu spasi, singkat, jelas, dan tidak memuat kata jawabannya.
+- Semua jawaban harus berbeda dan sesuai materi.
 
 ATURAN BARIS:
-Setiap soal WAJIB diakhiri dengan LINE BREAK atau ENTER sebelum soal berikutnya.
-Soal pertama berada di baris 1.
-Soal kedua berada di baris 2.
-Soal ketiga berada di baris 3.
-Lanjutkan pola tersebut sampai baris ${count}.
-JANGAN menempatkan dua soal pada baris yang sama.
-JANGAN membuat paragraf yang menggabungkan beberapa soal.
-JANGAN menggunakan koma, titik koma, atau tanda lain sebagai pengganti baris baru.
+- Satu soal per baris, setiap soal diakhiri ENTER.
+- Jangan menggabung soal dalam satu baris atau satu paragraf.
+- Jangan memakai koma, titik koma, atau tanda lain sebagai pengganti baris baru.
+- Jumlah baris harus tepat ${count}, tidak kurang dan tidak lebih.
 
 ATURAN OUTPUT:
-Tepat ${count} baris, tidak kurang dan tidak lebih.
-Tidak boleh ada teks sebelum baris pertama.
-Tidak boleh ada teks setelah baris terakhir.
-Jangan menggunakan nomor.
-Jangan menggunakan bullet.
-Jangan menggunakan tabel.
-Jangan menggunakan tanda "-".
-Jangan menggunakan tanda ":" antara jawaban dan petunjuk.
-Jangan memberikan penjelasan.
-Jangan memberikan pembuka.
-Jangan memberikan penutup.
-Tampilkan hanya plain text.
+- Tampilkan seluruh hasil di dalam SATU blok kode (code block), satu soal per baris secara vertikal.
+- Tanpa nomor, bullet, tabel, tanda "-" atau ":".
+- Tanpa teks pembuka, penutup, penjelasan, atau pemeriksaan di luar blok kode.
 
-PEMERIKSAAN SEBELUM MENJAWAB:
-Pastikan jumlah baris = ${count}.
-Pastikan setiap baris memiliki tepat 1 jawaban dan 1 petunjuk.
-Pastikan setiap jawaban hanya terdiri dari satu kata atau satu istilah.
-Pastikan setiap soal berada pada baris yang berbeda.
-Jika ada soal yang tergabung dalam satu baris, pecah menjadi baris baru sebelum memberikan jawaban.
-
-FORMAT AKHIR WAJIB:
-JAWABAN PETUNJUK
-JAWABAN PETUNJUK
-JAWABAN PETUNJUK
-dan seterusnya sampai tepat ${count} baris.
-
-Sekarang langsung tampilkan hasil akhirnya dan jangan tampilkan pemeriksaan atau penjelasan apa pun.`;
+Sebelum menampilkan, periksa diam-diam: jumlah baris sesuai, tiap baris punya 1 jawaban 1 petunjuk, tidak ada jawaban ganda. Jika ada soal yang tergabung dalam satu baris, pisahkan dulu. Lalu langsung tampilkan hasil akhirnya.`;
   }, [promptSubject, promptGrade, promptTopic, promptCount]);
 
   // Prompt Tab 2: Dari Kunci Jawaban Satu Kata (dipisahkan koma)
@@ -350,61 +318,28 @@ Sekarang langsung tampilkan hasil akhirnya dan jangan tampilkan pemeriksaan atau
     const answers = promptAnswersList.trim() || '.......';
     const subjectPart = subject ? ` mata pelajaran ${subject}` : '';
 
-    return `WAJIB membuat tepat 1 BARIS per kata kunci jawaban.
+    return `Buat baris soal teka-teki untuk daftar kunci jawaban berikut: ${answers}${subjectPart}.
 
-TUJUAN UTAMA:
-Hasil akhir HARUS berupa tepat satu baris teks yang terpisah secara vertikal untuk setiap kata kunci jawaban berikut: ${answers}${subjectPart}.
-Setiap soal HARUS berada pada BARIS BARU yang berbeda.
-Jangan pernah menggabungkan dua soal dalam satu baris.
-
-FORMAT WAJIB SETIAP BARIS:
-JAWABAN PETUNJUK
+FORMAT SETIAP BARIS:
+JAWABAN petunjuk
 
 ATURAN SOAL:
-Setiap baris harus berisi tepat 1 jawaban dan 1 petunjuk.
-Jawaban diambil langsung dari daftar kata kunci jawaban di atas.
-Jawaban tidak boleh terdiri dari dua atau lebih kata.
-Petunjuk harus jelas, singkat, dan sesuai dengan jawaban.
-Setiap soal harus berdiri sendiri dan tidak boleh menyambung dengan soal lain.
+- Satu baris berisi tepat 1 jawaban dan 1 petunjuk.
+- JAWABAN diambil dari daftar kunci jawaban di atas, hanya SATU kata, huruf kapital, tanpa spasi, angka, atau tanda baca.
+- Petunjuk ditulis setelah satu spasi, singkat, jelas, dan tidak memuat kata jawabannya.
 
 ATURAN BARIS:
-Setiap soal WAJIB diakhiri dengan LINE BREAK atau ENTER sebelum soal berikutnya.
-Soal pertama berada di baris 1.
-Soal kedua berada di baris 2.
-Soal ketiga berada di baris 3.
-Lanjutkan pola tersebut sampai seluruh kunci jawaban selesai.
-JANGAN menempatkan dua soal pada baris yang sama.
-JANGAN membuat paragraf yang menggabungkan beberapa soal.
-JANGAN menggunakan koma, titik koma, atau tanda lain sebagai pengganti baris baru.
+- Satu soal per baris, setiap soal diakhiri ENTER.
+- Jangan menggabung soal dalam satu baris atau satu paragraf.
+- Jangan memakai koma, titik koma, atau tanda lain sebagai pengganti baris baru.
+- Jumlah baris harus tepat sejumlah kata kunci jawaban, tidak kurang dan tidak lebih.
 
 ATURAN OUTPUT:
-Tepat sejumlah kunci jawaban, tidak kurang dan tidak lebih.
-Tidak boleh ada teks sebelum baris pertama.
-Tidak boleh ada teks setelah baris terakhir.
-Jangan menggunakan nomor.
-Jangan menggunakan bullet.
-Jangan menggunakan tabel.
-Jangan menggunakan tanda "-".
-Jangan menggunakan tanda ":" antara jawaban dan petunjuk.
-Jangan memberikan penjelasan.
-Jangan memberikan pembuka.
-Jangan memberikan penutup.
-Tampilkan hanya plain text.
+- Tampilkan seluruh hasil di dalam SATU blok kode (code block), satu soal per baris secara vertikal.
+- Tanpa nomor, bullet, tabel, tanda "-" atau ":".
+- Tanpa teks pembuka, penutup, penjelasan, atau pemeriksaan di luar blok kode.
 
-PEMERIKSAAN SEBELUM MENJAWAB:
-Pastikan jumlah baris sesuai jumlah kata kunci jawaban.
-Pastikan setiap baris memiliki tepat 1 jawaban dan 1 petunjuk.
-Pastikan setiap jawaban hanya terdiri dari satu kata atau satu istilah.
-Pastikan setiap soal berada pada baris yang berbeda.
-Jika ada soal yang tergabung dalam satu baris, pecah menjadi baris baru sebelum memberikan jawaban.
-
-FORMAT AKHIR WAJIB:
-JAWABAN PETUNJUK
-JAWABAN PETUNJUK
-JAWABAN PETUNJUK
-dan seterusnya.
-
-Sekarang langsung tampilkan hasil akhirnya dan jangan tampilkan pemeriksaan atau penjelasan apa pun.`;
+Sebelum menampilkan, periksa diam-diam: jumlah baris sesuai, tiap baris punya 1 jawaban 1 petunjuk, tidak ada jawaban ganda. Jika ada soal yang tergabung dalam satu baris, pisahkan dulu. Lalu langsung tampilkan hasil akhirnya.`;
   }, [promptAnswersSubject, promptSubject, promptAnswersList]);
 
   const currentActivePrompt = promptActiveTab === 'topic' ? generatedPromptTab1 : generatedPromptTab2;
