@@ -282,19 +282,19 @@ export const WorksheetGenerator: React.FC = () => {
   // Prompt Tab 1: Dari Materi
   const generatedPromptTab1 = useMemo(() => {
     const subject = promptSubject.trim() || '...';
-    const grade = promptGrade.trim() || '....';
-    const topic = promptTopic.trim() || '....';
+    const grade = promptGrade.trim() || '...';
+    const topic = promptTopic.trim() || '...';
     const count = promptCount.trim() || '...';
 
-    return `Jadilah Ahli dalam membuat Jawaban dan soal TTS mata pelajaran ${subject} kelas ${grade}. Buatkan soal dan jawaban untuk dijadikan teka teki silang dengan jawaban hanya berupa satu kata atau istilah penting untuk materi ${topic}. Dengan format JAWABAN[spasi]PETUNJUK atau SOAL, buat agar satu soal per baris. sebanyak ${count} butir, tanpa nomor dan mudah di copy. spasi artinya spasi, bukan kata spasi.`;
+    return `Jadilah Ahli dalam membuat soal dan jawaban Teka-Teki Silang (TTS) mata pelajaran ${subject} kelas ${grade} dengan materi ${topic}. Buat sebanyak ${count} butir, dengan jawaban hanya berupa satu kata atau istilah penting. Gunakan format JAWABAN[spasi]SOAL/PETUNJUK, sehingga setiap pasangan jawaban dan soal berada dalam satu baris: jawaban1 soal1 pada baris pertama, jawaban2 soal2 pada baris kedua, dan seterusnya. Tanpa nomor, tanpa bullet, tanpa penjelasan tambahan, dan mudah dicopy. [spasi] berarti satu spasi biasa sebagai pemisah antara jawaban dan soal, bukan kata "spasi".`;
   }, [promptSubject, promptGrade, promptTopic, promptCount]);
 
   // Prompt Tab 2: Dari Kunci Jawaban Satu Kata (dipisahkan koma)
   const generatedPromptTab2 = useMemo(() => {
-    const subject = (promptAnswersSubject.trim() || promptSubject.trim()) || '....';
+    const subject = (promptAnswersSubject.trim() || promptSubject.trim()) || '...';
     const answers = promptAnswersList.trim() || '.......';
 
-    return `Jadilah Ahli dalam membuat soal TTS mata pelajaran ${subject} untuk jawaban berikut ${answers} . Dengan format JAWABAN[spasi]PETUNJUK atau SOAL, buat agar satu soal per baris, tanpa nomor dan mudah di copy. spasi artinya spasi, bukan kata spasi.`;
+    return `Jadilah Ahli dalam membuat soal Teka-Teki Silang (TTS) mata pelajaran ${subject} untuk jawaban berikut ${answers}. Gunakan format JAWABAN[spasi]SOAL/PETUNJUK, sehingga setiap pasangan jawaban dan soal berada dalam satu baris: jawaban1 soal1 pada baris pertama, jawaban2 soal2 pada baris kedua, dan seterusnya. Tanpa nomor, tanpa bullet, tanpa penjelasan tambahan, dan mudah dicopy. [spasi] berarti satu spasi biasa sebagai pemisah antara jawaban dan soal, bukan kata "spasi".`;
   }, [promptAnswersSubject, promptSubject, promptAnswersList]);
 
   const currentActivePrompt = promptActiveTab === 'topic' ? generatedPromptTab1 : generatedPromptTab2;
