@@ -286,7 +286,11 @@ export const WorksheetGenerator: React.FC = () => {
     const topic = promptTopic.trim() || '...';
     const count = promptCount.trim() || '...';
 
-    return `Jadilah Ahli dalam membuat soal dan jawaban Teka-Teki Silang (TTS) mata pelajaran ${subject} kelas ${grade} dengan materi ${topic}. Buat sebanyak ${count} butir, dengan jawaban hanya berupa satu kata atau istilah penting. Gunakan format JAWABAN[spasi]SOAL/PETUNJUK, sehingga setiap pasangan jawaban dan soal berada dalam satu baris: jawaban1 soal1 pada baris pertama, jawaban2 soal2 pada baris kedua, dan seterusnya. Tanpa nomor, tanpa bullet, tanpa penjelasan tambahan, dan mudah dicopy. [spasi] berarti satu spasi biasa sebagai pemisah antara jawaban dan soal, bukan kata "spasi".`;
+    return `Jadilah Ahli dalam membuat soal dan jawaban Teka-Teki Silang (TTS) mata pelajaran ${subject} kelas ${grade} dengan materi ${topic}. Buat sebanyak ${count} butir. Setiap jawaban harus berupa satu kata atau satu istilah penting yang sesuai dengan materi dan setiap jawaban harus memiliki satu petunjuk/soal yang jelas. WAJIB gunakan format tepat: JAWABAN[spasi]PETUNJUK/SOAL. SANGAT PENTING: SATU BUTIR = SATU BARIS. Setelah selesai menulis satu jawaban dan petunjuk, WAJIB tekan ENTER/BUAT BARIS BARU sebelum menulis butir berikutnya. Jadi jawaban1 dan soal1 harus berada pada baris pertama, jawaban2 dan soal2 harus berada pada baris kedua, jawaban3 dan soal3 pada baris ketiga, dan seterusnya. JANGAN menggabungkan beberapa butir menjadi satu paragraf. JANGAN menggunakan nomor, bullet, tanda strip, tabel, atau penjelasan tambahan. Jangan memberikan pembukaan atau penutup. Hasil akhir HARUS berupa daftar baris terpisah yang langsung dapat dicopy. Gunakan bahasa Indonesia yang sesuai dengan tingkat kelas ${grade}. Hindari jawaban yang terdiri dari beberapa kata; jika istilah penting terdiri dari beberapa kata, tuliskan sebagai satu istilah tanpa spasi agar sesuai untuk TTS. Ingat: [spasi] berarti satu spasi biasa antara JAWABAN dan PETUNJUK, bukan menuliskan kata "[spasi]". FORMAT WAJIB:
+JAWABAN1 PETUNJUK1
+JAWABAN2 PETUNJUK2
+JAWABAN3 PETUNJUK3
+dan seterusnya.`;
   }, [promptSubject, promptGrade, promptTopic, promptCount]);
 
   // Prompt Tab 2: Dari Kunci Jawaban Satu Kata (dipisahkan koma)
@@ -294,7 +298,11 @@ export const WorksheetGenerator: React.FC = () => {
     const subject = (promptAnswersSubject.trim() || promptSubject.trim()) || '...';
     const answers = promptAnswersList.trim() || '.......';
 
-    return `Jadilah Ahli dalam membuat soal Teka-Teki Silang (TTS) mata pelajaran ${subject} untuk jawaban berikut ${answers}. Gunakan format JAWABAN[spasi]SOAL/PETUNJUK, sehingga setiap pasangan jawaban dan soal berada dalam satu baris: jawaban1 soal1 pada baris pertama, jawaban2 soal2 pada baris kedua, dan seterusnya. Tanpa nomor, tanpa bullet, tanpa penjelasan tambahan, dan mudah dicopy. [spasi] berarti satu spasi biasa sebagai pemisah antara jawaban dan soal, bukan kata "spasi".`;
+    return `Jadilah Ahli dalam membuat petunjuk/soal Teka-Teki Silang (TTS) mata pelajaran ${subject} untuk daftar kunci jawaban berikut: ${answers}. Setiap jawaban harus memiliki satu petunjuk/soal yang jelas. WAJIB gunakan format tepat: JAWABAN[spasi]PETUNJUK/SOAL. SANGAT PENTING: SATU BUTIR = SATU BARIS. Setelah selesai menulis satu jawaban dan petunjuk, WAJIB tekan ENTER/BUAT BARIS BARU sebelum menulis butir berikutnya. Jadi jawaban1 dan soal1 harus berada pada baris pertama, jawaban2 dan soal2 harus berada pada baris kedua, dan seterusnya. JANGAN menggabungkan beberapa butir menjadi satu paragraf. JANGAN menggunakan nomor, bullet, tanda strip, tabel, atau penjelasan tambahan. Jangan memberikan pembukaan atau penutup. Hasil akhir HARUS berupa daftar baris terpisah yang langsung dapat dicopy. Ingat: [spasi] berarti satu spasi biasa antara JAWABAN dan PETUNJUK, bukan menuliskan kata "[spasi]". FORMAT WAJIB:
+JAWABAN1 PETUNJUK1
+JAWABAN2 PETUNJUK2
+JAWABAN3 PETUNJUK3
+dan seterusnya.`;
   }, [promptAnswersSubject, promptSubject, promptAnswersList]);
 
   const currentActivePrompt = promptActiveTab === 'topic' ? generatedPromptTab1 : generatedPromptTab2;
