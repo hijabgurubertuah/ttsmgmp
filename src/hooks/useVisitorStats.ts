@@ -4,7 +4,7 @@ import {
   setDoc,
   getDoc,
   getDocs,
-  increment,
+  runTransaction,
   serverTimestamp,
   deleteDoc,
   collection,
@@ -41,17 +41,39 @@ export function useVisitorStats(): VisitorStats {
     // 2. Register visitor count if not visited today
     const visitedDate = localStorage.getItem('tts_visited_date');
     if (visitedDate !== todayStr) {
-      setDoc(
-        statsDocRef,
-        {
-          totalVisitors: increment(1),
-          todayVisitors: increment(1),
-          todayDate: todayStr,
-        },
-        { merge: true }
-      )
-        .then(() => {
+      runTransaction(db, async (transaction) => {
+        const statsDoc = await transaction.get(statsDocRef);
+        if (!statsDoc.exists()) {
+          const initialData = {
+            totalVisitors: 1,
+            todayVisitors: 1,
+            todayDate: todayStr,
+          };
+          transaction.set(statsDocRef, initialData);
+          return { total: 1, today: 1 };
+        } else {
+          const data = statsDoc.data();
+          const isNewDay = data.todayDate !== todayStr;
+          const currentTotal = typeof data.totalVisitors === 'number' ? data.totalVisitors : 0;
+          const currentToday = typeof data.todayVisitors === 'number' ? data.todayVisitors : 0;
+
+          const nextTotal = currentTotal + 1;
+          const nextToday = isNewDay ? 1 : currentToday + 1;
+
+          transaction.update(statsDocRef, {
+            totalVisitors: nextTotal,
+            todayVisitors: nextToday,
+            todayDate: todayStr,
+          });
+          return { total: nextTotal, today: nextToday };
+        }
+      })
+        .then((result) => {
           localStorage.setItem('tts_visited_date', todayStr);
+          if (isMounted && result) {
+            setTotalVisitors(result.total);
+            setTodayVisitors(result.today);
+          }
         })
         .catch((err) => {
           console.warn('Failed to update visitor count:', err);
@@ -81,12 +103,12 @@ export function useVisitorStats(): VisitorStats {
         if (isMounted) {
           if (snap.exists()) {
             const data = snap.data();
-            if (data.todayDate === todayStr) {
-              setTodayVisitors(data.todayVisitors || 1);
-            } else {
-              setTodayVisitors(1);
-            }
-            setTotalVisitors(data.totalVisitors || 1);
+            const total = typeof data.totalVisitors === 'number' ? data.totalVisitors : 1;
+            // Jika tanggal di server sama dengan hari ini, gunakan todayVisitors.
+            // Jika tanggal di server adalah kemarin/sebelumnya dan belum ada yang berkunjung hari ini, set 0.
+            const today = data.todayDate === todayStr ? (data.todayVisitors || 1) : 0;
+            setTotalVisitors(total);
+            setTodayVisitors(today);
           } else {
             setTotalVisitors(1);
             setTodayVisitors(1);
@@ -138,9 +160,19 @@ export function useVisitorStats(): VisitorStats {
 }
 
 function getTodayDateString(): string {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  try {
+    const formatter = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Jakarta',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
+    return formatter.format(new Date());
+  } catch {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
 }
