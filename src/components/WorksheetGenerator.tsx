@@ -894,26 +894,26 @@ Sebelum menampilkan, periksa diam-diam: jumlah baris sesuai, tiap baris punya 1 
 
                   <div>
                     <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                      Jenjang / Kelas :
+                      Kelas :
                     </label>
                     <input
                       type="text"
                       value={promptGrade}
                       onChange={(e) => setPromptGrade(e.target.value)}
-                      placeholder="Jenjang / kelas..."
+                      placeholder="Kelas..."
                       className="w-full px-3 py-2 text-xs rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:outline-none transition shadow-2xs"
                     />
                   </div>
 
                   <div>
                     <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                      Materi Pelajaran :
+                      Materi :
                     </label>
                     <input
                       type="text"
                       value={promptTopic}
                       onChange={(e) => setPromptTopic(e.target.value)}
-                      placeholder="Materi pelajaran..."
+                      placeholder="Materi..."
                       className="w-full px-3 py-2 text-xs rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:outline-none transition shadow-2xs"
                     />
                   </div>
