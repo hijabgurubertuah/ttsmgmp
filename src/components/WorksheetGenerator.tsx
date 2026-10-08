@@ -131,11 +131,14 @@ export const WorksheetGenerator: React.FC = () => {
   });
   const [showPromptMaker, setShowPromptMaker] = useState(() => {
     try {
-      return localStorage.getItem('tts_show_prompt_maker') !== 'false';
+      const saved = localStorage.getItem('tts_show_prompt_maker');
+      return saved !== null ? saved === 'true' : false;
     } catch {
-      return true;
+      return false;
     }
   });
+  const [isPromptExpanded, setIsPromptExpanded] = useState(false);
+  const [promptAttemptedCopy, setPromptAttemptedCopy] = useState(false);
   // Tab 1: Dari Materi
   const [promptSubject, setPromptSubject] = useState(() => {
     try {
@@ -160,9 +163,9 @@ export const WorksheetGenerator: React.FC = () => {
   });
   const [promptCount, setPromptCount] = useState(() => {
     try {
-      return localStorage.getItem('tts_prompt_count') ?? '10';
+      return localStorage.getItem('tts_prompt_count') ?? '';
     } catch {
-      return '10';
+      return '';
     }
   });
   // Tab 2: Dari Kunci Jawaban
@@ -285,7 +288,7 @@ export const WorksheetGenerator: React.FC = () => {
     const grade = promptGrade.trim() || '....';
     const topic = promptTopic.trim() || '...';
     const count = promptCount.trim() || '...';
-    const subjectPart = subject ? ` mata pelajaran ${subject}` : '';
+    const subjectPart = ` mata pelajaran ${subject || '...'}`;
 
     return `Buat tepat ${count} baris soal teka-teki untuk materi ${topic}${subjectPart} kelas ${grade}.
 
@@ -345,6 +348,7 @@ Sebelum menampilkan, periksa diam-diam: jumlah baris sesuai, tiap baris punya 1 
   const currentActivePrompt = promptActiveTab === 'topic' ? generatedPromptTab1 : generatedPromptTab2;
 
   const handleCopyPrompt = async () => {
+    setPromptAttemptedCopy(true);
     try {
       await navigator.clipboard.writeText(currentActivePrompt);
       setCopiedPrompt(true);
@@ -887,8 +891,12 @@ Sebelum menampilkan, periksa diam-diam: jumlah baris sesuai, tiap baris punya 1 
                       type="text"
                       value={promptSubject}
                       onChange={(e) => setPromptSubject(e.target.value)}
-                      placeholder="Mata pelajaran..."
-                      className="w-full px-3 py-2 text-xs rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:outline-none transition shadow-2xs"
+                      placeholder="Contoh IPA"
+                      className={`w-full px-3 py-2 text-xs rounded-lg border bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:outline-none transition shadow-2xs ${
+                        promptAttemptedCopy && !promptSubject.trim()
+                          ? 'border-rose-500 focus:ring-rose-500'
+                          : 'border-neutral-300 dark:border-neutral-700 focus:ring-teal-500'
+                      }`}
                     />
                   </div>
 
@@ -900,8 +908,12 @@ Sebelum menampilkan, periksa diam-diam: jumlah baris sesuai, tiap baris punya 1 
                       type="text"
                       value={promptGrade}
                       onChange={(e) => setPromptGrade(e.target.value)}
-                      placeholder="Kelas..."
-                      className="w-full px-3 py-2 text-xs rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:outline-none transition shadow-2xs"
+                      placeholder="Contoh 8 SMP"
+                      className={`w-full px-3 py-2 text-xs rounded-lg border bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:outline-none transition shadow-2xs ${
+                        promptAttemptedCopy && !promptGrade.trim()
+                          ? 'border-rose-500 focus:ring-rose-500'
+                          : 'border-neutral-300 dark:border-neutral-700 focus:ring-teal-500'
+                      }`}
                     />
                   </div>
 
@@ -913,8 +925,12 @@ Sebelum menampilkan, periksa diam-diam: jumlah baris sesuai, tiap baris punya 1 
                       type="text"
                       value={promptTopic}
                       onChange={(e) => setPromptTopic(e.target.value)}
-                      placeholder="Materi..."
-                      className="w-full px-3 py-2 text-xs rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:outline-none transition shadow-2xs"
+                      placeholder="Contoh Sistem Pernapasan"
+                      className={`w-full px-3 py-2 text-xs rounded-lg border bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:outline-none transition shadow-2xs ${
+                        promptAttemptedCopy && !promptTopic.trim()
+                          ? 'border-rose-500 focus:ring-rose-500'
+                          : 'border-neutral-300 dark:border-neutral-700 focus:ring-teal-500'
+                      }`}
                     />
                   </div>
 
@@ -926,8 +942,12 @@ Sebelum menampilkan, periksa diam-diam: jumlah baris sesuai, tiap baris punya 1 
                       type="text"
                       value={promptCount}
                       onChange={(e) => setPromptCount(e.target.value)}
-                      placeholder="Jumlah soal..."
-                      className="w-full px-3 py-2 text-xs rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:outline-none transition shadow-2xs"
+                      placeholder="15"
+                      className={`w-full px-3 py-2 text-xs rounded-lg border bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:outline-none transition shadow-2xs ${
+                        promptAttemptedCopy && !promptCount.trim()
+                          ? 'border-rose-500 focus:ring-rose-500'
+                          : 'border-neutral-300 dark:border-neutral-700 focus:ring-teal-500'
+                      }`}
                     />
                   </div>
                 </div>
@@ -947,8 +967,12 @@ Sebelum menampilkan, periksa diam-diam: jumlah baris sesuai, tiap baris punya 1 
                         setPromptAnswersSubject(e.target.value);
                         if (!promptSubject) setPromptSubject(e.target.value);
                       }}
-                      placeholder="Mata pelajaran..."
-                      className="w-full px-3 py-2 text-xs rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:outline-none transition shadow-2xs"
+                      placeholder="Contoh IPA"
+                      className={`w-full px-3 py-2 text-xs rounded-lg border bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:outline-none transition shadow-2xs ${
+                        promptAttemptedCopy && !(promptAnswersSubject.trim() || promptSubject.trim())
+                          ? 'border-rose-500 focus:ring-rose-500'
+                          : 'border-neutral-300 dark:border-neutral-700 focus:ring-teal-500'
+                      }`}
                     />
                   </div>
 
@@ -961,7 +985,11 @@ Sebelum menampilkan, periksa diam-diam: jumlah baris sesuai, tiap baris punya 1 
                       value={promptAnswersList}
                       onChange={(e) => setPromptAnswersList(e.target.value)}
                       placeholder="Contoh: MITOKONDRIA, NUKLEUS, SITOPLASMA, RIBOSOM, VAKUOLA"
-                      className="w-full px-3 py-1.5 text-xs rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:outline-none transition shadow-2xs resize-none"
+                      className={`w-full px-3 py-1.5 text-xs rounded-lg border bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:outline-none transition shadow-2xs resize-none ${
+                        promptAttemptedCopy && !promptAnswersList.trim()
+                          ? 'border-rose-500 focus:ring-rose-500'
+                          : 'border-neutral-300 dark:border-neutral-700 focus:ring-teal-500'
+                      }`}
                     />
                   </div>
                 </div>
@@ -969,8 +997,25 @@ Sebelum menampilkan, periksa diam-diam: jumlah baris sesuai, tiap baris punya 1 
 
               {/* Hasil Prompt Jadi Siap Tempel */}
               <div className="space-y-2 pt-1">
-                <div className="p-3 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-300 dark:border-neutral-700 text-neutral-800 dark:text-neutral-200 font-mono text-[11px] sm:text-xs leading-relaxed select-all break-words whitespace-pre-wrap">
-                  {currentActivePrompt}
+                {/* Collapsible Prompt Preview Area */}
+                <div className="border border-neutral-300 dark:border-neutral-700 rounded-lg overflow-hidden bg-white dark:bg-neutral-900">
+                  <button
+                    type="button"
+                    onClick={() => setIsPromptExpanded((prev) => !prev)}
+                    className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-850 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition flex items-center justify-between text-xs font-semibold text-neutral-700 dark:text-neutral-300 cursor-pointer"
+                  >
+                    <span>{isPromptExpanded ? 'Sembunyikan Isi Prompt' : 'Lihat Isi Prompt'}</span>
+                    <ChevronDown
+                      className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                        isPromptExpanded ? 'rotate-180' : ''
+                      }`}
+                    />
+                  </button>
+                  {isPromptExpanded && (
+                    <div className="p-3 border-t border-neutral-200 dark:border-neutral-700 text-neutral-800 dark:text-neutral-200 font-mono text-[11px] sm:text-xs leading-relaxed select-all break-words whitespace-pre-wrap max-h-60 overflow-y-auto">
+                      {currentActivePrompt}
+                    </div>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
@@ -1080,38 +1125,15 @@ Sebelum menampilkan, periksa diam-diam: jumlah baris sesuai, tiap baris punya 1 
               Judul
             </label>
             {(currentTitle || currentRawWords) && (
-              <div>
-                {showClearConfirm ? (
-                  <div className="flex items-center gap-2 bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 px-2 py-0.5 rounded-lg text-xs">
-                    <span className="text-rose-700 dark:text-rose-300 font-medium">Kosongkan semua?</span>
-                    <button
-                      type="button"
-                      onClick={handleClearInputs}
-                      className="font-bold text-rose-600 hover:text-rose-800 dark:text-rose-400 hover:underline cursor-pointer"
-                    >
-                      Ya, Hapus
-                    </button>
-                    <span className="text-neutral-400">|</span>
-                    <button
-                      type="button"
-                      onClick={() => setShowClearConfirm(false)}
-                      className="text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 cursor-pointer"
-                    >
-                      Batal
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setShowClearConfirm(true)}
-                    className="flex items-center gap-1 text-xs text-neutral-500 hover:text-rose-600 dark:text-neutral-400 dark:hover:text-rose-400 transition font-medium cursor-pointer"
-                    title="Kosongkan teks judul dan isian soal (tersimpan otomatis)"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    <span>Kosongkan Form</span>
-                  </button>
-                )}
-              </div>
+              <button
+                type="button"
+                onClick={() => setShowClearConfirm(true)}
+                className="flex items-center gap-1 text-xs text-neutral-500 hover:text-rose-600 dark:text-neutral-400 dark:hover:text-rose-400 transition font-medium cursor-pointer"
+                title="Kosongkan teks judul dan isian soal"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Kosongkan Form</span>
+              </button>
             )}
           </div>
           <input
@@ -1612,6 +1634,49 @@ Sebelum menampilkan, periksa diam-diam: jumlah baris sesuai, tiap baris punya 1 
               >
                 <Share2 className="w-3.5 h-3.5 shrink-0" />
                 <span>Bagikan</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Popup Konfirmasi Kosongkan Form */}
+      {showClearConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
+          <div
+            className="w-full max-w-xs sm:max-w-sm bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-800 p-5 space-y-4 animate-in zoom-in-95 duration-150"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="clear-modal-title"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h3 id="clear-modal-title" className="font-bold text-base text-neutral-900 dark:text-white">
+                  Kosongkan ?
+                </h3>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+                  Teks judul dan isian soal pada {activeEditorTab === 'tts1' ? 'TTS 1' : 'TTS 2'} akan dikosongkan.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2.5 pt-1">
+              <button
+                type="button"
+                onClick={() => setShowClearConfirm(false)}
+                className="h-9.5 px-4 rounded-xl border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 font-semibold text-xs sm:text-sm cursor-pointer transition text-center"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={handleClearInputs}
+                className="h-9.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white font-bold text-xs sm:text-sm cursor-pointer transition shadow-2xs text-center"
+              >
+                Iya
               </button>
             </div>
           </div>
