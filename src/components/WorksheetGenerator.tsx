@@ -286,7 +286,7 @@ export const WorksheetGenerator: React.FC = () => {
     const topic = promptTopic.trim() || '...';
     const count = promptCount.trim() || '...';
 
-    return `WAJIB buat setiap jawaban dan soal pada BARIS TERPISAH. Jadilah Ahli dalam membuat soal TTS mata pelajaran ${subject} kelas ${grade} materi ${topic}. Buat sebanyak ${count} butir = ${count} baris. Format wajib: JAWABAN[spasi]PETUNJUK. Satu jawaban dan satu petunjuk = satu baris, lalu ENTER untuk soal berikutnya. Jumlah baris harus tepat sama dengan jumlah butir. Tampilkan hasil dalam PLAIN TEXT yang dapat dicopy dengan sekali klik. setiap barisnya Jangan gunakan nomor, bullet, tabel, penjelasan tambahan, atau teks apa pun di luar hasil soal. Jangan gabungkan semua soal menjadi satu paragraf atau satu baris. Setiap jawaban dan petunjuk wajib dipisahkan dengan satu spasi.`;
+    return `WAJIB buat sebanyak ${count} baris kalimat. Ingat, jangan menyambung ke kalimat selanjutnya. Jadilah Ahli dalam membuat soal TTS mata pelajaran ${subject} kelas ${grade} materi ${topic}. Format setiap baris: JAWABAN[spasi]PETUNJUK. Satu jawaban dan satu petunjuk wajib berada dalam satu baris. Buat sebanyak ${count} butir = ${count} baris. Setelah satu baris selesai, wajib ENTER untuk membuat baris berikutnya. Tampilkan hasil dalam PLAIN TEXT yang dapat dicopy dengan sekali klik. Jangan gunakan nomor, bullet, tabel, penjelasan tambahan, atau teks di luar soal. Jangan menyambungkan semua soal menjadi satu paragraf. Jawaban harus satu kata atau istilah penting.`;
   }, [promptSubject, promptGrade, promptTopic, promptCount]);
 
   // Prompt Tab 2: Dari Kunci Jawaban Satu Kata (dipisahkan koma)
@@ -294,7 +294,7 @@ export const WorksheetGenerator: React.FC = () => {
     const subject = (promptAnswersSubject.trim() || promptSubject.trim()) || '...';
     const answers = promptAnswersList.trim() || '.......';
 
-    return `WAJIB buat setiap jawaban dan soal pada BARIS TERPISAH. Jadilah Ahli dalam membuat soal TTS mata pelajaran ${subject} untuk daftar kunci jawaban: ${answers}. Format wajib: JAWABAN[spasi]PETUNJUK. Satu jawaban dan satu petunjuk = satu baris, lalu ENTER untuk soal berikutnya. Tampilkan hasil dalam PLAIN TEXT yang dapat dicopy dengan sekali klik. setiap barisnya Jangan gunakan nomor, bullet, tabel, penjelasan tambahan, atau teks apa pun di luar hasil soal. Jangan gabungkan semua soal menjadi satu paragraf atau satu baris. Setiap jawaban dan petunjuk wajib dipisahkan dengan satu spasi.`;
+    return `WAJIB buat baris kalimat terpisah. Ingat, jangan menyambung ke kalimat selanjutnya. Jadilah Ahli dalam membuat soal TTS mata pelajaran ${subject} untuk daftar kunci jawaban: ${answers}. Format setiap baris: JAWABAN[spasi]PETUNJUK. Satu jawaban dan satu petunjuk wajib berada dalam satu baris. Setelah satu baris selesai, wajib ENTER untuk membuat baris berikutnya. Tampilkan hasil dalam PLAIN TEXT yang dapat dicopy dengan sekali klik. Jangan gunakan nomor, bullet, tabel, penjelasan tambahan, atau teks di luar soal. Jangan menyambungkan semua soal menjadi satu paragraf. Jawaban harus satu kata atau istilah penting.`;
   }, [promptAnswersSubject, promptSubject, promptAnswersList]);
 
   const currentActivePrompt = promptActiveTab === 'topic' ? generatedPromptTab1 : generatedPromptTab2;
