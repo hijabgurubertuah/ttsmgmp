@@ -286,11 +286,7 @@ export const WorksheetGenerator: React.FC = () => {
     const topic = promptTopic.trim() || '...';
     const count = promptCount.trim() || '...';
 
-    return `Jadilah Ahli dalam membuat soal dan jawaban Teka-Teki Silang (TTS) mata pelajaran ${subject} kelas ${grade} dengan materi ${topic}. Buat sebanyak ${count} butir. Setiap jawaban harus berupa satu kata atau satu istilah penting yang sesuai dengan materi dan setiap jawaban harus memiliki satu petunjuk/soal yang jelas. WAJIB gunakan format tepat: JAWABAN[spasi]PETUNJUK/SOAL. SANGAT PENTING: SATU BUTIR = SATU BARIS. Setelah selesai menulis satu jawaban dan petunjuk, WAJIB tekan ENTER/BUAT BARIS BARU sebelum menulis butir berikutnya. Jadi jawaban1 dan soal1 harus berada pada baris pertama, jawaban2 dan soal2 harus berada pada baris kedua, jawaban3 dan soal3 pada baris ketiga, dan seterusnya. JANGAN menggabungkan beberapa butir menjadi satu paragraf. JANGAN menggunakan nomor, bullet, tanda strip, tabel, atau penjelasan tambahan. Jangan memberikan pembukaan atau penutup. Hasil akhir HARUS berupa daftar baris terpisah yang langsung dapat dicopy. Gunakan bahasa Indonesia yang sesuai dengan tingkat kelas ${grade}. Hindari jawaban yang terdiri dari beberapa kata; jika istilah penting terdiri dari beberapa kata, tuliskan sebagai satu istilah tanpa spasi agar sesuai untuk TTS. Ingat: [spasi] berarti satu spasi biasa antara JAWABAN dan PETUNJUK, bukan menuliskan kata "[spasi]". FORMAT WAJIB:
-JAWABAN1 PETUNJUK1
-JAWABAN2 PETUNJUK2
-JAWABAN3 PETUNJUK3
-dan seterusnya.`;
+    return `Jadilah Ahli dalam membuat soal Teka-Teki Silang (TTS) mata pelajaran ${subject} kelas ${grade} dengan materi ${topic}. Buat sebanyak ${count} butir. Setiap butir harus terdiri dari JAWABAN dan PETUNJUK. Jawaban hanya satu kata atau satu istilah penting. ATURAN FORMAT PALING PENTING: SETIAP BUTIR HARUS DITULIS PADA BARIS YANG BERBEDA. Setelah menulis PETUNJUK butir pertama, langsung lakukan ENTER dan mulai butir kedua pada baris berikutnya. Setelah PETUNJUK butir kedua, lakukan ENTER lagi, dan seterusnya. JANGAN menggunakan paragraf, JANGAN menggunakan kalimat yang menyambung, dan JANGAN menempatkan semua soal dalam satu baris. Gunakan tepat satu spasi antara jawaban dan petunjuk. Jangan menggunakan nomor, bullet, tanda strip, tabel, tanda koma sebagai pemisah antarsoal, atau penjelasan tambahan. Hasil akhir hanya berupa baris-baris seperti contoh berikut: PARU Organ pernapasan utama manusia [ENTER] DIAFRAGMA Otot yang membantu proses pernapasan [ENTER] ALVEOLUS Tempat terjadinya pertukaran gas [ENTER] TRAKEA Saluran pernapasan yang menuju bronkus. INGAT: [ENTER] berarti WAJIB membuat BARIS BARU, bukan spasi. Jadi setiap JAWABAN + SOAL adalah satu baris tersendiri.`;
   }, [promptSubject, promptGrade, promptTopic, promptCount]);
 
   // Prompt Tab 2: Dari Kunci Jawaban Satu Kata (dipisahkan koma)
@@ -298,11 +294,7 @@ dan seterusnya.`;
     const subject = (promptAnswersSubject.trim() || promptSubject.trim()) || '...';
     const answers = promptAnswersList.trim() || '.......';
 
-    return `Jadilah Ahli dalam membuat petunjuk/soal Teka-Teki Silang (TTS) mata pelajaran ${subject} untuk daftar kunci jawaban berikut: ${answers}. Setiap jawaban harus memiliki satu petunjuk/soal yang jelas. WAJIB gunakan format tepat: JAWABAN[spasi]PETUNJUK/SOAL. SANGAT PENTING: SATU BUTIR = SATU BARIS. Setelah selesai menulis satu jawaban dan petunjuk, WAJIB tekan ENTER/BUAT BARIS BARU sebelum menulis butir berikutnya. Jadi jawaban1 dan soal1 harus berada pada baris pertama, jawaban2 dan soal2 harus berada pada baris kedua, dan seterusnya. JANGAN menggabungkan beberapa butir menjadi satu paragraf. JANGAN menggunakan nomor, bullet, tanda strip, tabel, atau penjelasan tambahan. Jangan memberikan pembukaan atau penutup. Hasil akhir HARUS berupa daftar baris terpisah yang langsung dapat dicopy. Ingat: [spasi] berarti satu spasi biasa antara JAWABAN dan PETUNJUK, bukan menuliskan kata "[spasi]". FORMAT WAJIB:
-JAWABAN1 PETUNJUK1
-JAWABAN2 PETUNJUK2
-JAWABAN3 PETUNJUK3
-dan seterusnya.`;
+    return `Jadilah Ahli dalam membuat petunjuk/soal Teka-Teki Silang (TTS) mata pelajaran ${subject} untuk daftar kunci jawaban berikut: ${answers}. Setiap butir harus terdiri dari JAWABAN dan PETUNJUK. Jawaban hanya satu kata atau satu istilah penting. ATURAN FORMAT PALING PENTING: SETIAP BUTIR HARUS DITULIS PADA BARIS YANG BERBEDA. Setelah menulis PETUNJUK butir pertama, langsung lakukan ENTER dan mulai butir kedua pada baris berikutnya. Setelah PETUNJUK butir kedua, lakukan ENTER lagi, dan seterusnya. JANGAN menggunakan paragraf, JANGAN menggunakan kalimat yang menyambung, dan JANGAN menempatkan semua soal dalam satu baris. Gunakan tepat satu spasi antara jawaban dan petunjuk. Jangan menggunakan nomor, bullet, tanda strip, tabel, tanda koma sebagai pemisah antarsoal, atau penjelasan tambahan. INGAT: setiap baris baru adalah [ENTER], sehingga setiap JAWABAN + SOAL adalah satu baris tersendiri.`;
   }, [promptAnswersSubject, promptSubject, promptAnswersList]);
 
   const currentActivePrompt = promptActiveTab === 'topic' ? generatedPromptTab1 : generatedPromptTab2;
