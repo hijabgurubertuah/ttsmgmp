@@ -281,20 +281,70 @@ export const WorksheetGenerator: React.FC = () => {
 
   // Prompt Tab 1: Dari Materi
   const generatedPromptTab1 = useMemo(() => {
-    const subject = promptSubject.trim() || '...';
+    const subject = promptSubject.trim();
     const grade = promptGrade.trim() || '...';
     const topic = promptTopic.trim() || '...';
     const count = promptCount.trim() || '...';
+    const subjectPart = subject ? ` mata pelajaran ${subject}` : '';
 
-    return `WAJIB buat sebanyak ${count} baris kalimat. Ingat, jangan menyambung ke kalimat selanjutnya. Jadilah Ahli dalam membuat soal TTS mata pelajaran ${subject} kelas ${grade} materi ${topic}. Format setiap baris: JAWABAN[spasi]PETUNJUK. Satu jawaban dan satu petunjuk wajib berada dalam satu baris. Buat sebanyak ${count} butir = ${count} baris. Setelah satu baris selesai, wajib ENTER untuk membuat baris berikutnya. Tampilkan hasil dalam PLAIN TEXT yang dapat dicopy dengan sekali klik. Jangan gunakan nomor, bullet, tabel, penjelasan tambahan, atau teks di luar soal. Jangan menyambungkan semua soal menjadi satu paragraf. Jawaban harus satu kata atau istilah penting.`;
+    return `WAJIB membuat tepat ${count} baris.
+Setiap baris harus berisi tepat 1 jawaban dan 1 petunjuk.
+Format setiap baris wajib:
+JAWABAN PETUNJUK
+
+Jawaban harus berupa satu kata atau satu istilah penting yang berkaitan dengan materi ${topic}${subjectPart} kelas ${grade}.
+Petunjuk harus jelas, singkat, dan sesuai dengan jawaban.
+Jangan membuat jawaban yang terdiri dari dua atau lebih kata.
+Jangan menyambungkan satu soal dengan soal lainnya.
+Setiap soal wajib berada di baris terpisah.
+Setelah satu baris selesai, tekan ENTER sebelum membuat baris berikutnya.
+
+ATURAN OUTPUT:
+- Tepat ${count} baris, tidak kurang dan tidak lebih.
+- Jangan menggunakan nomor.
+- Jangan menggunakan bullet.
+- Jangan menggunakan tabel.
+- Jangan menggunakan tanda "-".
+- Jangan menggunakan tanda ":" antara jawaban dan petunjuk.
+- Jangan memberikan penjelasan, pembuka, atau penutup.
+- Jangan menambahkan teks apa pun di luar ${count} soal.
+- Tampilkan hanya plain text agar mudah dicopy.
+- Pastikan setiap baris mengikuti format: JAWABAN[spasi]PETUNJUK.
+
+Sekarang buat tepat ${count} baris sesuai semua aturan di atas.`;
   }, [promptSubject, promptGrade, promptTopic, promptCount]);
 
   // Prompt Tab 2: Dari Kunci Jawaban Satu Kata (dipisahkan koma)
   const generatedPromptTab2 = useMemo(() => {
-    const subject = (promptAnswersSubject.trim() || promptSubject.trim()) || '...';
+    const subject = (promptAnswersSubject.trim() || promptSubject.trim());
     const answers = promptAnswersList.trim() || '.......';
+    const subjectPart = subject ? ` mata pelajaran ${subject}` : '';
 
-    return `WAJIB buat baris kalimat terpisah. Ingat, jangan menyambung ke kalimat selanjutnya. Jadilah Ahli dalam membuat soal TTS mata pelajaran ${subject} untuk daftar kunci jawaban: ${answers}. Format setiap baris: JAWABAN[spasi]PETUNJUK. Satu jawaban dan satu petunjuk wajib berada dalam satu baris. Setelah satu baris selesai, wajib ENTER untuk membuat baris berikutnya. Tampilkan hasil dalam PLAIN TEXT yang dapat dicopy dengan sekali klik. Jangan gunakan nomor, bullet, tabel, penjelasan tambahan, atau teks di luar soal. Jangan menyambungkan semua soal menjadi satu paragraf. Jawaban harus satu kata atau istilah penting.`;
+    return `WAJIB membuat tepat satu baris untuk setiap jawaban.
+Setiap baris harus berisi tepat 1 jawaban dan 1 petunjuk.
+Format setiap baris wajib:
+JAWABAN PETUNJUK
+
+Jawaban diambil dari daftar kunci jawaban: ${answers}${subjectPart}.
+Petunjuk harus jelas, singkat, dan sesuai dengan jawaban.
+Jangan membuat jawaban yang terdiri dari dua atau lebih kata.
+Jangan menyambungkan satu soal dengan soal lainnya.
+Setiap soal wajib berada di baris terpisah.
+Setelah satu baris selesai, tekan ENTER sebelum membuat baris berikutnya.
+
+ATURAN OUTPUT:
+- Tepat satu baris untuk setiap kunci jawaban, tidak kurang dan tidak lebih.
+- Jangan menggunakan nomor.
+- Jangan menggunakan bullet.
+- Jangan menggunakan tabel.
+- Jangan menggunakan tanda "-".
+- Jangan menggunakan tanda ":" antara jawaban dan petunjuk.
+- Jangan memberikan penjelasan, pembuka, atau penutup.
+- Jangan menambahkan teks apa pun di luar soal.
+- Tampilkan hanya plain text agar mudah dicopy.
+- Pastikan setiap baris mengikuti format: JAWABAN[spasi]PETUNJUK.
+
+Sekarang buat baris sesuai semua aturan di atas.`;
   }, [promptAnswersSubject, promptSubject, promptAnswersList]);
 
   const currentActivePrompt = promptActiveTab === 'topic' ? generatedPromptTab1 : generatedPromptTab2;
@@ -924,7 +974,7 @@ export const WorksheetGenerator: React.FC = () => {
 
               {/* Hasil Prompt Jadi Siap Tempel */}
               <div className="space-y-2 pt-1">
-                <div className="p-3 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-300 dark:border-neutral-700 text-neutral-800 dark:text-neutral-200 font-mono text-[11px] sm:text-xs leading-relaxed select-all break-words">
+                <div className="p-3 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-300 dark:border-neutral-700 text-neutral-800 dark:text-neutral-200 font-mono text-[11px] sm:text-xs leading-relaxed select-all break-words whitespace-pre-wrap">
                   {currentActivePrompt}
                 </div>
 
