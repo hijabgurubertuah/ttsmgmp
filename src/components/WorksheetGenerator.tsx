@@ -894,7 +894,7 @@ Sebelum menampilkan, periksa diam-diam: jumlah baris sesuai, tiap baris punya 1 
                       placeholder="Contoh IPA"
                       className={`w-full px-3 py-2 text-xs rounded-lg border bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:outline-none transition shadow-2xs ${
                         promptAttemptedCopy && !promptSubject.trim()
-                          ? 'border-rose-500 focus:ring-rose-500'
+                          ? 'border-rose-500 animate-blink-red focus:ring-rose-500'
                           : 'border-neutral-300 dark:border-neutral-700 focus:ring-teal-500'
                       }`}
                     />
@@ -911,7 +911,7 @@ Sebelum menampilkan, periksa diam-diam: jumlah baris sesuai, tiap baris punya 1 
                       placeholder="Contoh 8 SMP"
                       className={`w-full px-3 py-2 text-xs rounded-lg border bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:outline-none transition shadow-2xs ${
                         promptAttemptedCopy && !promptGrade.trim()
-                          ? 'border-rose-500 focus:ring-rose-500'
+                          ? 'border-rose-500 animate-blink-red focus:ring-rose-500'
                           : 'border-neutral-300 dark:border-neutral-700 focus:ring-teal-500'
                       }`}
                     />
@@ -928,7 +928,7 @@ Sebelum menampilkan, periksa diam-diam: jumlah baris sesuai, tiap baris punya 1 
                       placeholder="Contoh Sistem Pernapasan"
                       className={`w-full px-3 py-2 text-xs rounded-lg border bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:outline-none transition shadow-2xs ${
                         promptAttemptedCopy && !promptTopic.trim()
-                          ? 'border-rose-500 focus:ring-rose-500'
+                          ? 'border-rose-500 animate-blink-red focus:ring-rose-500'
                           : 'border-neutral-300 dark:border-neutral-700 focus:ring-teal-500'
                       }`}
                     />
@@ -942,10 +942,10 @@ Sebelum menampilkan, periksa diam-diam: jumlah baris sesuai, tiap baris punya 1 
                       type="text"
                       value={promptCount}
                       onChange={(e) => setPromptCount(e.target.value)}
-                      placeholder="15"
+                      placeholder="Contoh 15"
                       className={`w-full px-3 py-2 text-xs rounded-lg border bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:outline-none transition shadow-2xs ${
                         promptAttemptedCopy && !promptCount.trim()
-                          ? 'border-rose-500 focus:ring-rose-500'
+                          ? 'border-rose-500 animate-blink-red focus:ring-rose-500'
                           : 'border-neutral-300 dark:border-neutral-700 focus:ring-teal-500'
                       }`}
                     />
@@ -970,7 +970,7 @@ Sebelum menampilkan, periksa diam-diam: jumlah baris sesuai, tiap baris punya 1 
                       placeholder="Contoh IPA"
                       className={`w-full px-3 py-2 text-xs rounded-lg border bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:outline-none transition shadow-2xs ${
                         promptAttemptedCopy && !(promptAnswersSubject.trim() || promptSubject.trim())
-                          ? 'border-rose-500 focus:ring-rose-500'
+                          ? 'border-rose-500 animate-blink-red focus:ring-rose-500'
                           : 'border-neutral-300 dark:border-neutral-700 focus:ring-teal-500'
                       }`}
                     />
@@ -987,7 +987,7 @@ Sebelum menampilkan, periksa diam-diam: jumlah baris sesuai, tiap baris punya 1 
                       placeholder="Contoh: MITOKONDRIA, NUKLEUS, SITOPLASMA, RIBOSOM, VAKUOLA"
                       className={`w-full px-3 py-1.5 text-xs rounded-lg border bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:outline-none transition shadow-2xs resize-none ${
                         promptAttemptedCopy && !promptAnswersList.trim()
-                          ? 'border-rose-500 focus:ring-rose-500'
+                          ? 'border-rose-500 animate-blink-red focus:ring-rose-500'
                           : 'border-neutral-300 dark:border-neutral-700 focus:ring-teal-500'
                       }`}
                     />
@@ -1004,7 +1004,7 @@ Sebelum menampilkan, periksa diam-diam: jumlah baris sesuai, tiap baris punya 1 
                     onClick={() => setIsPromptExpanded((prev) => !prev)}
                     className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-850 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition flex items-center justify-between text-xs font-semibold text-neutral-700 dark:text-neutral-300 cursor-pointer"
                   >
-                    <span>{isPromptExpanded ? 'Sembunyikan Isi Prompt' : 'Lihat Isi Prompt'}</span>
+                    <span>{isPromptExpanded ? 'Sembunyikan' : 'Lihat'}</span>
                     <ChevronDown
                       className={`w-3.5 h-3.5 transition-transform duration-200 ${
                         isPromptExpanded ? 'rotate-180' : ''
