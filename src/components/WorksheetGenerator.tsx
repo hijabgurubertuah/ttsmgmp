@@ -286,7 +286,7 @@ export const WorksheetGenerator: React.FC = () => {
     const topic = promptTopic.trim() || '.......';
     const count = promptCount.trim() || '...';
 
-    return `Jadilah Ahli dalam membuat Jawaban dan soal TTS mata pelajaran ${subject} kelas ${grade}. Buatkan soal dan jawaban untuk dijadikan teka teki silang dengan jawaban hanya berupa satu kata atau istilah penting untuk materi ${topic}. Dengan format JAWABAN[spasi]PETUNJUK atau SOAL, buat agar satu soal per baris. sebanyak ${count} butir, tanpa nomor dan mudah di copy. spasi artinya spasi, bukan kata spasi, jawaban satu kata di buat huruf kapital.`;
+    return `Jadilah Ahli dalam membuat Jawaban dan soal TTS mata pelajaran ${subject} kelas ${grade}. Buatkan soal dan jawaban untuk dijadikan teka teki silang dengan jawaban hanya berupa satu kata atau istilah penting untuk materi ${topic}. Dengan format JAWABAN[spasi]Petunjuk atau Soal, buat agar setiap satu soal per baris. sebanyak ${count} butir, tanpa nomor dan mudah di copy. [spasi] artinya spasi, bukan kata spasi. jawaban satu kata itu di buat huruf kapital.`;
   }, [promptSubject, promptGrade, promptTopic, promptCount]);
 
   // Prompt Tab 2: Dari Kunci Jawaban Satu Kata (dipisahkan koma)
@@ -294,7 +294,7 @@ export const WorksheetGenerator: React.FC = () => {
     const subject = (promptAnswersSubject.trim() || promptSubject.trim()) || '....';
     const answers = promptAnswersList.trim() || '.......';
 
-    return `Jadilah Ahli dalam membuat soal TTS mata pelajaran ${subject} untuk jawaban berikut ${answers} . Dengan format JAWABAN[spasi]PETUNJUK atau SOAL, buat agar satu soal per baris, tanpa nomor dan mudah di copy. spasi artinya spasi, bukan kata spasi, jawaban satu kata di buat huruf kapital.`;
+    return `Jadilah Ahli dalam membuat soal TTS mata pelajaran ${subject} untuk jawaban berikut ${answers} . Dengan format JAWABAN[spasi]Petunjuk atau Soal, buat agar setiap satu soal per baris, tanpa nomor dan mudah di copy. [spasi] artinya spasi, bukan kata spasi. jawaban satu kata itu di buat huruf kapital.`;
   }, [promptAnswersSubject, promptSubject, promptAnswersList]);
 
   const currentActivePrompt = promptActiveTab === 'topic' ? generatedPromptTab1 : generatedPromptTab2;
