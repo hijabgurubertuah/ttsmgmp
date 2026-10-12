@@ -1,6 +1,7 @@
 import React from 'react';
 import { WorksheetGenerator } from './components/WorksheetGenerator';
 import { PWAInstallButton } from './components/PWAInstallButton';
+import { CachedBanner } from './components/CachedBanner';
 
 export default function App() {
   return (
@@ -8,12 +9,7 @@ export default function App() {
       {/* Banner Cover - Hanya muncul di HP (Mobile), tidak ada cover di tampilan desktop */}
       <div className="sm:hidden print:hidden w-full bg-slate-900 shadow-sm border-b border-teal-800/30">
         <div className="max-w-4xl mx-auto overflow-hidden">
-          <img
-            src="https://i.ibb.co.com/prynFRkH/1000353298.png"
-            alt="Banner MGMP IPA Bengkalis"
-            className="w-full h-auto block object-cover max-h-48 mx-auto"
-            loading="eager"
-          />
+          <CachedBanner />
         </div>
       </div>
 
