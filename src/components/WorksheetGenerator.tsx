@@ -23,8 +23,10 @@ import {
   CopyCheck,
   SplitSquareVertical,
   Share2,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
-import { generateCrossword, parseRawInput, findOptimalSeedForLayout, cleanCrosswordInput } from '../utils/crosswordGenerator';
+import { generateCrossword, parseRawInput, findOptimalSeedForLayout, cleanCrosswordInput, findNextValidSeed } from '../utils/crosswordGenerator';
 import { CrosswordLayout } from '../types';
 import { WorksheetPaper } from './WorksheetPaper';
 import { WorksheetPaper2PerPage } from './WorksheetPaper2PerPage';
@@ -99,10 +101,16 @@ export const WorksheetGenerator: React.FC = () => {
 
   const [seed2, setSeed2] = useState(() => {
     try {
-      const saved = localStorage.getItem('tts_maker_seed2');
-      return saved ? parseInt(saved, 10) : 15;
+      const saved2 = localStorage.getItem('tts_maker_seed2');
+      const source = localStorage.getItem('tts_2per_source');
+      if (source === 'same' || !source) {
+        // By default, 2 TTS sama starts identical (seed2 matches seed)
+        const saved1 = localStorage.getItem('tts_maker_seed');
+        return saved2 ? parseInt(saved2, 10) : (saved1 ? parseInt(saved1, 10) : 42);
+      }
+      return saved2 ? parseInt(saved2, 10) : 42;
     } catch {
-      return 15;
+      return 42;
     }
   });
 
@@ -385,7 +393,8 @@ Sebelum menampilkan, periksa diam-diam: jumlah baris sesuai, tiap baris punya 1 
   const downWords1 = layout1.placedWords.filter((w) => w.direction === 'down');
 
   // Secondary TTS generation (used for TTS 2 / Bottom Slot)
-  // When 'same': uses parsedItems1 with the EXACT SAME layout/variation as top (layout1)
+  // When 'same': uses parsedItems1. By default seed2 === seed, producing the EXACT SAME layout.
+  // If user adjusts variations on top or bottom, seed or seed2 updates independently with 100% placed words.
   // When 'different': uses parsedItems2 with seed2
   const parsedItems2 = useMemo(() => parseRawInput(rawWords2), [rawWords2]);
   const bottomItems = useMemo(
@@ -393,19 +402,19 @@ Sebelum menampilkan, periksa diam-diam: jumlah baris sesuai, tiap baris punya 1 
     [twoPerPageSource, parsedItems1, parsedItems2]
   );
   const layout2: CrosswordLayout = useMemo(() => {
-    if (twoPerPageSource === 'same') {
+    if (twoPerPageSource === 'same' && seed2 === seed) {
       return layout1;
     }
     return generateCrossword(bottomItems, seed2);
-  }, [twoPerPageSource, layout1, bottomItems, seed2]);
+  }, [twoPerPageSource, seed2, seed, layout1, bottomItems]);
 
   const acrossWords2 = useMemo(
-    () => (twoPerPageSource === 'same' ? acrossWords1 : layout2.placedWords.filter((w) => w.direction === 'across')),
-    [twoPerPageSource, acrossWords1, layout2]
+    () => (twoPerPageSource === 'same' && seed2 === seed ? acrossWords1 : layout2.placedWords.filter((w) => w.direction === 'across')),
+    [twoPerPageSource, seed2, seed, acrossWords1, layout2]
   );
   const downWords2 = useMemo(
-    () => (twoPerPageSource === 'same' ? downWords1 : layout2.placedWords.filter((w) => w.direction === 'down')),
-    [twoPerPageSource, downWords1, layout2]
+    () => (twoPerPageSource === 'same' && seed2 === seed ? downWords1 : layout2.placedWords.filter((w) => w.direction === 'down')),
+    [twoPerPageSource, seed2, seed, downWords1, layout2]
   );
 
   // TTS Data bundles
@@ -534,27 +543,32 @@ Sebelum menampilkan, periksa diam-diam: jumlah baris sesuai, tiap baris punya 1 
   const effectiveScale = scale;
 
   const currentSeed = activeEditorTab === 'tts1' ? seed : seed2;
-  const handleNextSeed = () => {
-    if (activeEditorTab === 'tts1' || (printLayout === '2_per_page' && twoPerPageSource === 'same')) {
-      setSeed((prev) => {
-        const next = prev + 1;
-        if (twoPerPageSource === 'same') setSeed2(next);
-        return next;
-      });
-    } else {
-      setSeed2((prev) => prev + 1);
-    }
+
+  const handleNextSeedTop = () => {
+    const nextSeed = findNextValidSeed(parsedItems1, seed, 'next');
+    setSeed(nextSeed);
   };
-  const handlePrevSeed = () => {
-    if (activeEditorTab === 'tts1' || (printLayout === '2_per_page' && twoPerPageSource === 'same')) {
-      setSeed((prev) => {
-        const next = prev > 1 ? prev - 1 : 9999;
-        if (twoPerPageSource === 'same') setSeed2(next);
-        return next;
-      });
-    } else {
-      setSeed2((prev) => (prev > 1 ? prev - 1 : 9999));
-    }
+  const handlePrevSeedTop = () => {
+    const prevSeed = findNextValidSeed(parsedItems1, seed, 'prev');
+    setSeed(prevSeed);
+  };
+
+  const handleNextSeedBottom = () => {
+    const nextSeed = findNextValidSeed(bottomItems, seed2, 'next');
+    setSeed2(nextSeed);
+  };
+  const handlePrevSeedBottom = () => {
+    const prevSeed = findNextValidSeed(bottomItems, seed2, 'prev');
+    setSeed2(prevSeed);
+  };
+
+  const handleNextSeed1PerPage = () => {
+    const nextSeed = findNextValidSeed(parsedItems1, seed, 'next');
+    setSeed(nextSeed);
+  };
+  const handlePrevSeed1PerPage = () => {
+    const prevSeed = findNextValidSeed(parsedItems1, seed, 'prev');
+    setSeed(prevSeed);
   };
 
   // Touch gesture swipe handlers (swipe left/right to change variations)
@@ -575,28 +589,23 @@ Sebelum menampilkan, periksa diam-diam: jumlah baris sesuai, tiap baris punya 1 
     // Trigger only if horizontal swipe exceeds 40px and is predominantly horizontal
     if (Math.abs(diffX) > 40 && Math.abs(diffX) > Math.abs(diffY) * 1.2) {
       if (printLayout === '2_per_page') {
-        if (twoPerPageSource === 'same') {
-          if (diffX > 0) handlePrevSeed();
-          else handleNextSeed();
-        } else {
-          const containerRect = containerRef.current?.getBoundingClientRect();
-          const isTopHalf = containerRect
-            ? touchStartY.current < containerRect.top + containerRect.height / 2
-            : true;
+        const containerRect = containerRef.current?.getBoundingClientRect();
+        const isTopHalf = containerRect
+          ? touchStartY.current < containerRect.top + containerRect.height / 2
+          : true;
 
-          if (isTopHalf) {
-            if (diffX > 0) setSeed((prev) => (prev > 1 ? prev - 1 : 9999));
-            else setSeed((prev) => prev + 1);
-          } else {
-            if (diffX > 0) setSeed2((prev) => (prev > 1 ? prev - 1 : 9999));
-            else setSeed2((prev) => prev + 1);
-          }
+        if (isTopHalf) {
+          if (diffX > 0) handlePrevSeedTop();
+          else handleNextSeedTop();
+        } else {
+          if (diffX > 0) handlePrevSeedBottom();
+          else handleNextSeedBottom();
         }
       } else {
         if (diffX > 0) {
-          handlePrevSeed();
+          handlePrevSeed1PerPage();
         } else {
-          handleNextSeed();
+          handleNextSeed1PerPage();
         }
       }
     }
@@ -1313,111 +1322,68 @@ Sebelum menampilkan, periksa diam-diam: jumlah baris sesuai, tiap baris punya 1 
 
       {/* Pratinjau Lembar Kerja (Worksheet) - Responsive WYSIWYG Container */}
       <div className="w-full flex flex-col items-center">
-        {/* WYSIWYG Header Bar */}
-        <div className="print:hidden w-full max-w-[794px] flex flex-wrap items-center justify-between gap-2.5 px-3 py-2 mb-3 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-sm rounded-xl border border-teal-800/15 dark:border-neutral-800 shadow-sm text-xs text-neutral-600 dark:text-neutral-400">
-          <div className="flex items-center flex-wrap gap-2">
-            <span className="font-bold text-neutral-900 dark:text-white text-sm">
-              Pratinjau
-            </span>
+        {/* WYSIWYG Header Bar - 1 Baris di HP & Desktop (1 TTS, 2 TTS, PAS, LIHAT KUNCI) */}
+        <div className="print:hidden w-full max-w-[794px] flex items-center justify-between gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 mb-3 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-sm rounded-xl border border-teal-800/15 dark:border-neutral-800 shadow-sm text-xs text-neutral-600 dark:text-neutral-400 flex-nowrap">
+          {/* Kelompok Tombol Layout dan PAS */}
+          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+            {/* Opsi 1 TTS per Halaman */}
+            <button
+              type="button"
+              onClick={() => handleSelectLayout('1_per_page')}
+              title="1 TTS per Halaman A4"
+              className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer border shrink-0 ${
+                printLayout === '1_per_page'
+                  ? 'border-amber-500 bg-amber-500/15 text-amber-700 dark:text-amber-300 ring-1 ring-amber-500/30'
+                  : 'border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700'
+              }`}
+            >
+              1 TTS
+            </button>
 
-            {/* Tombol Pilih Layout (Miniatur Gambar Pas di Deretan Tulisan Pratinjau) */}
-            <div className="flex items-center gap-1.5 ml-1">
-              {/* Opsi 1 TTS per Halaman */}
-              <button
-                type="button"
-                onClick={() => handleSelectLayout('1_per_page')}
-                title="1 TTS per Halaman A4"
-                className={`p-1 rounded-lg border-2 transition cursor-pointer flex flex-col items-center justify-center ${
-                  printLayout === '1_per_page'
-                    ? 'border-amber-500 bg-amber-500/15 text-amber-600 dark:text-amber-400 ring-1 ring-amber-500/30 scale-105'
-                    : 'border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-400 hover:border-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 opacity-75 hover:opacity-100'
-                }`}
-              >
-                <div className="w-5 h-6.5 rounded-2xs border border-current p-0.5 flex flex-col justify-between bg-white dark:bg-neutral-950">
-                  <div className="w-full h-2.5 border border-current/80 rounded-2xs bg-current/20 flex items-center justify-center">
-                    <div className="w-1.5 h-1.5 grid grid-cols-2 gap-px opacity-60">
-                      <div className="bg-current" />
-                      <div className="bg-current" />
-                      <div className="bg-current" />
-                      <div className="bg-current" />
-                    </div>
-                  </div>
-                  <div className="w-full space-y-0.5">
-                    <div className="w-full h-0.5 bg-current/60 rounded-2xs" />
-                  </div>
-                </div>
-              </button>
+            {/* Opsi 2 TTS per Halaman */}
+            <button
+              type="button"
+              onClick={() => handleSelectLayout('2_per_page')}
+              title="2 TTS per Halaman A4 (Hemat Kertas)"
+              className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer border shrink-0 ${
+                printLayout === '2_per_page'
+                  ? 'border-amber-500 bg-amber-500/15 text-amber-700 dark:text-amber-300 ring-1 ring-amber-500/30'
+                  : 'border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700'
+              }`}
+            >
+              2 TTS
+            </button>
 
-              {/* Opsi 2 TTS per Halaman */}
-              <button
-                type="button"
-                onClick={() => handleSelectLayout('2_per_page')}
-                title="2 TTS per Halaman A4 (Hemat Kertas)"
-                className={`p-1 rounded-lg border-2 transition cursor-pointer flex flex-col items-center justify-center ${
-                  printLayout === '2_per_page'
-                    ? 'border-amber-500 bg-amber-500/15 text-amber-600 dark:text-amber-400 ring-1 ring-amber-500/30 scale-105'
-                    : 'border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-400 hover:border-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 opacity-75 hover:opacity-100'
-                }`}
-              >
-                <div className="w-5 h-6.5 rounded-2xs border border-current p-0.5 flex flex-col justify-between bg-white dark:bg-neutral-950">
-                  <div className="w-full h-2 border border-current/80 rounded-2xs bg-current/20 flex items-center justify-between px-0.5">
-                    <div className="w-1 h-1 bg-current opacity-70" />
-                    <div className="w-1 h-0.5 bg-current opacity-70" />
-                  </div>
-                  <div className="w-full border-t border-dashed border-current my-px" />
-                  <div className="w-full h-2 border border-current/80 rounded-2xs bg-current/20 flex items-center justify-between px-0.5">
-                    <div className="w-1 h-1 bg-current opacity-70" />
-                    <div className="w-1 h-0.5 bg-current opacity-70" />
-                  </div>
-                </div>
-              </button>
-            </div>
-
-            {/* Tombol Otomatis Pas di samping Tombol Layout */}
+            {/* Tombol PAS (Tanpa Ikon) */}
             <button
               type="button"
               onClick={handleAutoFit}
               title="Otomatis pilih susunan yang pas untuk 1 lembar kertas"
-              className="text-xs px-2.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-neutral-950 font-bold transition cursor-pointer shadow-2xs flex items-center gap-1 ml-0.5"
+              className="text-xs px-2.5 sm:px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-neutral-950 font-bold transition cursor-pointer shadow-2xs shrink-0"
             >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Otomatis Pas</span>
+              PAS
             </button>
           </div>
 
-          {/* Tab Lembar Soal dan Ceklis Kunci */}
-          <div className="flex items-center flex-wrap gap-1.5">
-            {/* Tab Lembar Soal */}
+          {/* Tombol LIHAT KUNCI (Huruf Kapital) */}
+          <div className="flex items-center shrink-0">
             <button
               type="button"
-              onClick={() => setShowAnswerKey(false)}
-              className={`px-3 py-1.5 rounded-lg font-bold text-xs transition cursor-pointer flex items-center gap-1.5 ${
-                !showAnswerKey
-                  ? 'bg-amber-500 text-neutral-950 shadow-2xs'
-                  : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700'
-              }`}
-            >
-              <FileText className="w-3.5 h-3.5" />
-              <span>Lembar Soal</span>
-            </button>
-
-            {/* Ceklis Kunci */}
-            <label
-              className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer select-none border ${
+              onClick={() => setShowAnswerKey((prev) => !prev)}
+              className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1 shadow-2xs border shrink-0 ${
                 showAnswerKey
-                  ? 'bg-amber-500/15 border-amber-500 text-amber-700 dark:text-amber-300 shadow-2xs'
-                  : 'bg-neutral-100 dark:bg-neutral-800/80 border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700'
+                  ? 'bg-amber-500 border-amber-600 text-neutral-950 font-extrabold'
+                  : 'bg-neutral-100 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700'
               }`}
-              title="Ceklis untuk melihat kunci jawaban"
+              title={showAnswerKey ? 'Kembali ke tampilan lembar soal' : 'Tampilkan kunci jawaban pada lembar TTS'}
             >
-              <input
-                type="checkbox"
-                checked={showAnswerKey}
-                onChange={(e) => setShowAnswerKey(e.target.checked)}
-                className="w-3.5 h-3.5 accent-amber-500 rounded cursor-pointer"
-              />
-              <span>Kunci</span>
-            </label>
+              {showAnswerKey ? (
+                <EyeOff className="w-3.5 h-3.5 text-neutral-950 shrink-0" />
+              ) : (
+                <Eye className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+              )}
+              <span>LIHAT KUNCI</span>
+            </button>
           </div>
         </div>
 
@@ -1428,15 +1394,15 @@ Sebelum menampilkan, periksa diam-diam: jumlah baris sesuai, tiap baris punya 1 
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
-          {/* Tombol Panah Navigasi Variasi (Biru Transparan) */}
+          {/* Tombol Panah Navigasi Variasi (Biru Transparan - Hanya Pilih Variasi yang Memuat Semua Jawaban) */}
           {printLayout === '2_per_page' ? (
             <>
               {/* === SLOT ATAS (TTS 1) === */}
               {/* Panah Kiri TTS Atas */}
               <button
                 type="button"
-                onClick={() => setSeed((prev) => (prev > 1 ? prev - 1 : 9999))}
-                title="TTS Atas: Susunan sebelumnya (bisa swipe layar atas ke kanan)"
+                onClick={handlePrevSeedTop}
+                title="TTS Atas: Variasi susunan sebelumnya (memuat semua jawaban)"
                 aria-label="TTS Atas Sebelumnya"
                 className="absolute left-0 sm:left-2 top-[25%] -translate-y-1/2 z-30 p-2 sm:p-3 text-blue-500 hover:text-blue-600 active:text-blue-700 hover:bg-blue-500/10 active:scale-95 bg-transparent rounded-full transition cursor-pointer focus:outline-none"
               >
@@ -1446,8 +1412,8 @@ Sebelum menampilkan, periksa diam-diam: jumlah baris sesuai, tiap baris punya 1 
               {/* Panah Kanan TTS Atas */}
               <button
                 type="button"
-                onClick={() => setSeed((prev) => prev + 1)}
-                title="TTS Atas: Susunan berikutnya (bisa swipe layar atas ke kiri)"
+                onClick={handleNextSeedTop}
+                title="TTS Atas: Variasi susunan berikutnya (memuat semua jawaban)"
                 aria-label="TTS Atas Berikutnya"
                 className="absolute right-0 sm:right-2 top-[25%] -translate-y-1/2 z-30 p-2 sm:p-3 text-blue-500 hover:text-blue-600 active:text-blue-700 hover:bg-blue-500/10 active:scale-95 bg-transparent rounded-full transition cursor-pointer focus:outline-none"
               >
@@ -1458,8 +1424,8 @@ Sebelum menampilkan, periksa diam-diam: jumlah baris sesuai, tiap baris punya 1 
               {/* Panah Kiri TTS Bawah */}
               <button
                 type="button"
-                onClick={() => setSeed2((prev) => (prev > 1 ? prev - 1 : 9999))}
-                title="TTS Bawah: Susunan sebelumnya (bisa swipe layar bawah ke kanan)"
+                onClick={handlePrevSeedBottom}
+                title="TTS Bawah: Variasi susunan sebelumnya (memuat semua jawaban)"
                 aria-label="TTS Bawah Sebelumnya"
                 className="absolute left-0 sm:left-2 top-[75%] -translate-y-1/2 z-30 p-2 sm:p-3 text-blue-500 hover:text-blue-600 active:text-blue-700 hover:bg-blue-500/10 active:scale-95 bg-transparent rounded-full transition cursor-pointer focus:outline-none"
               >
@@ -1469,8 +1435,8 @@ Sebelum menampilkan, periksa diam-diam: jumlah baris sesuai, tiap baris punya 1 
               {/* Panah Kanan TTS Bawah */}
               <button
                 type="button"
-                onClick={() => setSeed2((prev) => prev + 1)}
-                title="TTS Bawah: Susunan berikutnya (bisa swipe layar bawah ke kiri)"
+                onClick={handleNextSeedBottom}
+                title="TTS Bawah: Variasi susunan berikutnya (memuat semua jawaban)"
                 aria-label="TTS Bawah Berikutnya"
                 className="absolute right-0 sm:right-2 top-[75%] -translate-y-1/2 z-30 p-2 sm:p-3 text-blue-500 hover:text-blue-600 active:text-blue-700 hover:bg-blue-500/10 active:scale-95 bg-transparent rounded-full transition cursor-pointer focus:outline-none"
               >
@@ -1483,8 +1449,8 @@ Sebelum menampilkan, periksa diam-diam: jumlah baris sesuai, tiap baris punya 1 
               {/* Tombol Variasi Kiri (Panah Biru Latar Transparan) */}
               <button
                 type="button"
-                onClick={handlePrevSeed}
-                title="Susunan sebelumnya (bisa swipe layar ke kanan)"
+                onClick={handlePrevSeed1PerPage}
+                title="Variasi susunan sebelumnya (memuat semua jawaban)"
                 aria-label="Sebelumnya"
                 className="absolute left-0 sm:left-2 top-1/2 -translate-y-1/2 z-30 p-2 sm:p-3 text-blue-500 hover:text-blue-600 active:text-blue-700 hover:bg-blue-500/10 active:scale-95 bg-transparent rounded-full transition cursor-pointer focus:outline-none"
               >
@@ -1494,8 +1460,8 @@ Sebelum menampilkan, periksa diam-diam: jumlah baris sesuai, tiap baris punya 1 
               {/* Tombol Variasi Kanan (Panah Biru Latar Transparan) */}
               <button
                 type="button"
-                onClick={handleNextSeed}
-                title="Susunan berikutnya (bisa swipe layar ke kiri)"
+                onClick={handleNextSeed1PerPage}
+                title="Variasi susunan berikutnya (memuat semua jawaban)"
                 aria-label="Berikutnya"
                 className="absolute right-0 sm:right-2 top-1/2 -translate-y-1/2 z-30 p-2 sm:p-3 text-blue-500 hover:text-blue-600 active:text-blue-700 hover:bg-blue-500/10 active:scale-95 bg-transparent rounded-full transition cursor-pointer focus:outline-none"
               >

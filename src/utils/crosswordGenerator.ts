@@ -481,3 +481,38 @@ export function findOptimalSeedForLayout(
   return bestSeed;
 }
 
+/**
+ * Finds the next or previous seed that guarantees ZERO unplaced words (memuat semua jawaban).
+ * If a variation does not fit all words, it is automatically bypassed so only valid complete layouts are selectable.
+ */
+export function findNextValidSeed(
+  items: WordClue[],
+  currentSeed: number,
+  direction: 'next' | 'prev',
+  maxAttempts: number = 300
+): number {
+  if (!items || items.length === 0) {
+    return direction === 'next' ? currentSeed + 1 : Math.max(1, currentSeed - 1);
+  }
+
+  const step = direction === 'next' ? 1 : -1;
+  let testSeed = currentSeed + step;
+  let bestFallback = testSeed;
+  let minUnplaced = Infinity;
+
+  for (let i = 0; i < maxAttempts; i++) {
+    if (testSeed < 1) testSeed = 1000;
+    const layout = generateCrossword(items, testSeed);
+    if (layout.unplacedWords.length === 0) {
+      return testSeed;
+    }
+    if (layout.unplacedWords.length < minUnplaced) {
+      minUnplaced = layout.unplacedWords.length;
+      bestFallback = testSeed;
+    }
+    testSeed += step;
+  }
+
+  return bestFallback;
+}
+

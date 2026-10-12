@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Eye, EyeOff, Sparkles, RefreshCw, ChevronLeft, ChevronRight, AlertCircle, CheckCircle, BookOpen } from 'lucide-react';
-import { generateCrossword, parseRawInput, cleanCrosswordInput, findOptimalSeedForLayout } from '../utils/crosswordGenerator';
+import { generateCrossword, parseRawInput, cleanCrosswordInput, findOptimalSeedForLayout, findNextValidSeed } from '../utils/crosswordGenerator';
 import { CrosswordLayout, PrivacySetting, PuzzleData } from '../types';
 import { PRESETS } from '../utils/presets';
 import { CrosswordGrid } from './CrosswordGrid';
@@ -35,8 +35,8 @@ export const CrosswordBuilder: React.FC<CrosswordBuilderProps> = ({
     return generateCrossword(parsedItems, seed);
   }, [parsedItems, seed]);
 
-  const handleNextSeed = () => setSeed((prev) => prev + 1);
-  const handlePrevSeed = () => setSeed((prev) => (prev > 1 ? prev - 1 : 9999));
+  const handleNextSeed = () => setSeed((prev) => findNextValidSeed(parsedItems, prev, 'next'));
+  const handlePrevSeed = () => setSeed((prev) => findNextValidSeed(parsedItems, prev, 'prev'));
 
   const handleLoadPreset = (index: number) => {
     setSelectedPresetIndex(index);
