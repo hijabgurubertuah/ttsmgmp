@@ -11,11 +11,24 @@ export function usePWAInstall() {
   const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
-    // Detect standalone mode (already installed)
+    // Detect standalone mode or previously marked as installed
     const isStandalone =
       window.matchMedia('(display-mode: standalone)').matches ||
-      (window.navigator as unknown as { standalone?: boolean }).standalone === true;
+      (window.navigator as unknown as { standalone?: boolean }).standalone === true ||
+      localStorage.getItem('tts_app_is_installed') === 'true';
     setIsInstalled(isStandalone);
+
+    // Also listen for display-mode change
+    const mediaQuery = window.matchMedia('(display-mode: standalone)');
+    const handleDisplayModeChange = (e: MediaQueryListEvent) => {
+      if (e.matches) {
+        setIsInstalled(true);
+        localStorage.setItem('tts_app_is_installed', 'true');
+      }
+    };
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', handleDisplayModeChange);
+    }
 
     // Detect iOS devices
     const userAgent = window.navigator.userAgent.toLowerCase();
@@ -29,6 +42,7 @@ export function usePWAInstall() {
 
     const handleAppInstalled = () => {
       setIsInstalled(true);
+      localStorage.setItem('tts_app_is_installed', 'true');
       setDeferredPrompt(null);
     };
 
@@ -36,6 +50,9 @@ export function usePWAInstall() {
     window.addEventListener('appinstalled', handleAppInstalled);
 
     return () => {
+      if (mediaQuery.removeEventListener) {
+        mediaQuery.removeEventListener('change', handleDisplayModeChange);
+      }
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
     };
@@ -47,6 +64,7 @@ export function usePWAInstall() {
     const { outcome } = await deferredPrompt.userChoice;
     if (outcome === 'accepted') {
       setIsInstalled(true);
+      localStorage.setItem('tts_app_is_installed', 'true');
       setDeferredPrompt(null);
       return true;
     }
