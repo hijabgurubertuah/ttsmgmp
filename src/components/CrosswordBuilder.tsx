@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Eye, EyeOff, Sparkles, RefreshCw, ChevronLeft, ChevronRight, AlertCircle, CheckCircle, BookOpen } from 'lucide-react';
-import { generateCrossword, parseRawInput } from '../utils/crosswordGenerator';
+import { generateCrossword, parseRawInput, cleanCrosswordInput, findOptimalSeedForLayout } from '../utils/crosswordGenerator';
 import { CrosswordLayout, PrivacySetting, PuzzleData } from '../types';
 import { PRESETS } from '../utils/presets';
 import { CrosswordGrid } from './CrosswordGrid';
@@ -18,7 +18,7 @@ export const CrosswordBuilder: React.FC<CrosswordBuilderProps> = ({
 }) => {
   const [title, setTitle] = useState(initialPuzzle?.title || '');
   const [rawWords, setRawWords] = useState(
-    initialPuzzle?.rawInput || PRESETS[0].content
+    cleanCrosswordInput(initialPuzzle?.rawInput || PRESETS[0].content)
   );
   const [passcode, setPasscode] = useState(initialPuzzle?.passcode || '');
   const [showPasscode, setShowPasscode] = useState(false);
@@ -138,7 +138,27 @@ export const CrosswordBuilder: React.FC<CrosswordBuilderProps> = ({
               <textarea
                 rows={12}
                 value={rawWords}
-                onChange={(e) => setRawWords(e.target.value)}
+                onChange={(e) => setRawWords(cleanCrosswordInput(e.target.value))}
+                onPaste={(e) => {
+                  const pasteText = e.clipboardData?.getData('text');
+                  if (pasteText) {
+                    e.preventDefault();
+                    const cleanedPaste = cleanCrosswordInput(pasteText);
+                    const target = e.currentTarget;
+                    const start = target.selectionStart ?? 0;
+                    const end = target.selectionEnd ?? 0;
+                    const currentVal = target.value;
+                    const nextVal = currentVal.substring(0, start) + cleanedPaste + currentVal.substring(end);
+                    const finalCleaned = cleanCrosswordInput(nextVal);
+                    setRawWords(finalCleaned);
+
+                    const newItems = parseRawInput(finalCleaned);
+                    if (newItems.length > 0) {
+                      const optimalSeed = findOptimalSeedForLayout(newItems, '1_per_page', seed);
+                      setSeed(optimalSeed);
+                    }
+                  }
+                }}
                 placeholder="FOTOSINTESIS Pembuatan makanan pada tumbuhan&#10;KLOROFIL Zat hijau daun&#10;OKSIGEN Gas hasil fotosintesis"
                 className="w-full font-mono text-xs md:text-sm p-3 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 text-neutral-900 dark:text-white focus:ring-2 focus:ring-amber-500 focus:outline-none transition resize-y leading-relaxed"
               />

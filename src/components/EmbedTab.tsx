@@ -49,7 +49,7 @@ export const EmbedTab: React.FC<EmbedTabProps> = ({ puzzle, onGoToBuilder }) => 
   const handleCopy = () => {
     navigator.clipboard.writeText(iframeSnippet);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
+    setTimeout(() => setCopied(false), 800);
   };
 
   return (

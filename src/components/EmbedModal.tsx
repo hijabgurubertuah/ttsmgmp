@@ -40,7 +40,7 @@ export const EmbedModal: React.FC<EmbedModalProps> = ({ puzzle, isOpen, onClose 
   const handleCopy = () => {
     navigator.clipboard.writeText(iframeSnippet);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
+    setTimeout(() => setCopied(false), 800);
   };
 
   return (

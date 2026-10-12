@@ -10,13 +10,83 @@ function pseudoRandom(seed: number) {
   };
 }
 
+/**
+ * Automatically cleans AI/ChatGPT output artifacts such as:
+ * - Leading "text" and markdown code fences (```, ```text, ```plaintext, etc.)
+ * - Trailing/closing markdown code fences (```) on the final line or anywhere
+ * Ensures only clean "JAWABAN SOAL" lines remain in the input.
+ */
+export function cleanCrosswordInput(input: string): string {
+  if (!input) return '';
+
+  // Quick check if input contains codeblock markers or standalone "text" lines
+  const hasFenceOrArtifact = input.includes('`') || /^\s*text\s*$/im.test(input);
+  if (!hasFenceOrArtifact) {
+    return input;
+  }
+
+  const rawLines = input.split(/\r?\n/);
+  const cleanedLines: string[] = [];
+
+  for (let i = 0; i < rawLines.length; i++) {
+    const rawLine = rawLines[i];
+    const trimmed = rawLine.trim();
+
+    // 1. Skip lines that are standalone markdown fences: ```, ```text, ```plaintext, ```txt, ```markdown, etc.
+    if (/^```+[a-zA-Z0-9_-]*\s*$/.test(trimmed)) {
+      continue;
+    }
+
+    // 2. Skip lines that are "text```..." or "text ```..."
+    if (/^text\s*```+/i.test(trimmed)) {
+      continue;
+    }
+
+    // 3. Skip standalone line "text" at the start, end, or adjacent to a code fence or blank lines before content
+    if (/^text$/i.test(trimmed)) {
+      const isStart = cleanedLines.length === 0;
+      const nextLine = i < rawLines.length - 1 ? rawLines[i + 1].trim() : '';
+      const nextIsFence = /^```+/.test(nextLine);
+      if (isStart || nextIsFence) {
+        continue;
+      }
+    }
+
+    // 4. If line contains trailing ``` at the end (e.g. "JAWABAN Soal petunjuk ```"), strip the backticks
+    let sanitizedLine = rawLine.replace(/```+$/, '').trimEnd();
+
+    // 5. If line begins with ``` (e.g. "```JAWABAN Soal petunjuk"), strip leading backticks
+    sanitizedLine = sanitizedLine.replace(/^```+/, '').trimStart();
+
+    cleanedLines.push(sanitizedLine);
+  }
+
+  // Remove empty lines at the very beginning and very end (often left behind by deleted fences)
+  let startIdx = 0;
+  while (startIdx < cleanedLines.length && cleanedLines[startIdx].trim() === '') {
+    startIdx++;
+  }
+  let endIdx = cleanedLines.length - 1;
+  while (endIdx >= startIdx && cleanedLines[endIdx].trim() === '') {
+    endIdx--;
+  }
+
+  if (startIdx > endIdx) return '';
+  return cleanedLines.slice(startIdx, endIdx + 1).join('\n');
+}
+
 export function parseRawInput(raw: string): WordClue[] {
-  const lines = raw.split('\n');
+  const cleaned = cleanCrosswordInput(raw);
+  const lines = cleaned.split('\n');
   const items: WordClue[] = [];
 
   for (let i = 0; i < lines.length; i++) {
     const trimmed = lines[i].trim();
     if (!trimmed) continue;
+
+    // Ignore code fence markers or language specifier
+    if (trimmed.startsWith('```') || trimmed.endsWith('```')) continue;
+    if (trimmed.toLowerCase() === 'text' || trimmed.toLowerCase() === 'plaintext') continue;
 
     // Format: ANSWER clue text...
     // Support either space separator or tab or pipe
@@ -71,12 +141,14 @@ export function generateCrossword(items: WordClue[], seed: number = 1): Crosswor
 
   const rng = pseudoRandom(seed);
 
-  // Shuffle items slightly based on seed while giving priority to longer words
-  const sorted = [...items].sort((a, b) => {
-    const diff = b.word.length - a.word.length;
-    if (diff !== 0) return diff;
-    return rng() - 0.5;
-  });
+  // Sort items deterministically based on seed while maintaining priority for longer words.
+  // The seed provides slight variation in insertion order to uncover alternative interlocking arrangements.
+  const weighted = items.map((item) => ({
+    item,
+    weight: item.word.length * 10 + rng() * 12,
+  }));
+  weighted.sort((a, b) => b.weight - a.weight);
+  const sorted = weighted.map((w) => w.item);
 
   const placed: TempPlacedWord[] = [];
   const unplaced: WordClue[] = [];
@@ -356,8 +428,9 @@ export function generateCrossword(items: WordClue[], seed: number = 1): Crosswor
 }
 
 /**
- * Searches across multiple seeds (1 to 60) to find the most compact, best-interlocking crossword layout.
- * Specifically tuned to optimize empty space utilization for 1_per_page and 2_per_page layouts.
+ * Searches across multiple seeds (1 to 100) to find the most compact, best-interlocking crossword layout.
+ * Specifically tuned so that ZERO words are left unplaced ("agar tidak ada kata yang tertinggal")
+ * and optimizes empty space utilization for 1_per_page and 2_per_page layouts.
  */
 export function findOptimalSeedForLayout(
   items: WordClue[],
@@ -368,12 +441,15 @@ export function findOptimalSeedForLayout(
   let bestSeed = currentSeed;
   let bestScore = -Infinity;
 
-  for (let s = 1; s <= 60; s++) {
+  for (let s = 1; s <= 100; s++) {
     const res = generateCrossword(items, s);
     const unplaced = res.unplacedWords.length;
     const w = res.width || 1;
     const h = res.height || 1;
     const area = w * h;
+
+    // Strict priority: Zero unplaced words is supreme so no word is left behind.
+    const unplacedPenalty = unplaced * 1000000;
 
     if (layoutType === '2_per_page') {
       // 2 per page (half A4 slot):
@@ -381,9 +457,9 @@ export function findOptimalSeedForLayout(
       // 2. Tighter compact area
       // 3. Aspect ratio between 1.0 and 1.25 fits side-by-side slot perfectly
       const ratio = w / h;
-      const ratioPenalty = Math.abs(ratio - 1.15) * 35;
-      const dimPenalty = (w > 18 ? (w - 18) * 80 : 0) + (h > 15 ? (h - 15) * 80 : 0);
-      const score = 10000 - unplaced * 2500 - area * 2 - ratioPenalty - dimPenalty;
+      const ratioPenalty = Math.abs(ratio - 1.15) * 50;
+      const dimPenalty = (w > 18 ? (w - 18) * 100 : 0) + (h > 15 ? (h - 15) * 100 : 0);
+      const score = -unplacedPenalty - area * 2 - ratioPenalty - dimPenalty;
 
       if (score > bestScore) {
         bestScore = score;
@@ -392,8 +468,8 @@ export function findOptimalSeedForLayout(
     } else {
       // 1 per page:
       const ratio = w / h;
-      const ratioPenalty = Math.abs(ratio - 1.0) * 25;
-      const score = 10000 - unplaced * 2500 - area - ratioPenalty;
+      const ratioPenalty = Math.abs(ratio - 1.05) * 40;
+      const score = -unplacedPenalty - area - ratioPenalty;
 
       if (score > bestScore) {
         bestScore = score;

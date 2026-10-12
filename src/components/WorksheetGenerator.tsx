@@ -24,7 +24,7 @@ import {
   SplitSquareVertical,
   Share2,
 } from 'lucide-react';
-import { generateCrossword, parseRawInput, findOptimalSeedForLayout } from '../utils/crosswordGenerator';
+import { generateCrossword, parseRawInput, findOptimalSeedForLayout, cleanCrosswordInput } from '../utils/crosswordGenerator';
 import { CrosswordLayout } from '../types';
 import { WorksheetPaper } from './WorksheetPaper';
 import { WorksheetPaper2PerPage } from './WorksheetPaper2PerPage';
@@ -63,7 +63,8 @@ export const WorksheetGenerator: React.FC = () => {
 
   const [rawWords, setRawWords] = useState(() => {
     try {
-      return localStorage.getItem('tts_maker_raw_words') ?? '';
+      const saved = localStorage.getItem('tts_maker_raw_words') ?? '';
+      return cleanCrosswordInput(saved);
     } catch {
       return '';
     }
@@ -89,7 +90,8 @@ export const WorksheetGenerator: React.FC = () => {
 
   const [rawWords2, setRawWords2] = useState(() => {
     try {
-      return localStorage.getItem('tts_maker_raw_words2') ?? '';
+      const saved = localStorage.getItem('tts_maker_raw_words2') ?? '';
+      return cleanCrosswordInput(saved);
     } catch {
       return '';
     }
@@ -207,10 +209,10 @@ export const WorksheetGenerator: React.FC = () => {
     layoutDesc: '1 TTS per Halaman',
   });
 
-  // Auto-dismiss toast after 4.5s
+  // Auto-dismiss toast popup after 0.8s (800ms)
   useEffect(() => {
     if (toast) {
-      const timer = setTimeout(() => setToast(null), 4500);
+      const timer = setTimeout(() => setToast(null), 800);
       return () => clearTimeout(timer);
     }
   }, [toast]);
@@ -352,7 +354,7 @@ Sebelum menampilkan, periksa diam-diam: jumlah baris sesuai, tiap baris punya 1 
     try {
       await navigator.clipboard.writeText(currentActivePrompt);
       setCopiedPrompt(true);
-      setTimeout(() => setCopiedPrompt(false), 2000);
+      setTimeout(() => setCopiedPrompt(false), 800);
     } catch {
       const textArea = document.createElement('textarea');
       textArea.value = currentActivePrompt;
@@ -361,7 +363,7 @@ Sebelum menampilkan, periksa diam-diam: jumlah baris sesuai, tiap baris punya 1 
       document.execCommand('copy');
       document.body.removeChild(textArea);
       setCopiedPrompt(true);
-      setTimeout(() => setCopiedPrompt(false), 2000);
+      setTimeout(() => setCopiedPrompt(false), 800);
     }
   };
 
@@ -383,16 +385,28 @@ Sebelum menampilkan, periksa diam-diam: jumlah baris sesuai, tiap baris punya 1 
   const downWords1 = layout1.placedWords.filter((w) => w.direction === 'down');
 
   // Secondary TTS generation (used for TTS 2 / Bottom Slot)
-  // When 'same': uses parsedItems1 (same questions) with its own variation (seed2)
+  // When 'same': uses parsedItems1 with the EXACT SAME layout/variation as top (layout1)
   // When 'different': uses parsedItems2 with seed2
   const parsedItems2 = useMemo(() => parseRawInput(rawWords2), [rawWords2]);
   const bottomItems = useMemo(
     () => (twoPerPageSource === 'same' ? parsedItems1 : parsedItems2),
     [twoPerPageSource, parsedItems1, parsedItems2]
   );
-  const layout2: CrosswordLayout = useMemo(() => generateCrossword(bottomItems, seed2), [bottomItems, seed2]);
-  const acrossWords2 = layout2.placedWords.filter((w) => w.direction === 'across');
-  const downWords2 = layout2.placedWords.filter((w) => w.direction === 'down');
+  const layout2: CrosswordLayout = useMemo(() => {
+    if (twoPerPageSource === 'same') {
+      return layout1;
+    }
+    return generateCrossword(bottomItems, seed2);
+  }, [twoPerPageSource, layout1, bottomItems, seed2]);
+
+  const acrossWords2 = useMemo(
+    () => (twoPerPageSource === 'same' ? acrossWords1 : layout2.placedWords.filter((w) => w.direction === 'across')),
+    [twoPerPageSource, acrossWords1, layout2]
+  );
+  const downWords2 = useMemo(
+    () => (twoPerPageSource === 'same' ? downWords1 : layout2.placedWords.filter((w) => w.direction === 'down')),
+    [twoPerPageSource, downWords1, layout2]
+  );
 
   // TTS Data bundles
   const topTTS = useMemo(() => ({
@@ -435,6 +449,9 @@ Sebelum menampilkan, periksa diam-diam: jumlah baris sesuai, tiap baris punya 1 
       if (parsedItems1.length > 0) {
         const optimal1 = findOptimalSeedForLayout(parsedItems1, '2_per_page', seed);
         setSeed(optimal1);
+        if (twoPerPageSource === 'same') {
+          setSeed2(optimal1);
+        }
       }
       if (twoPerPageSource === 'different' && parsedItems2.length > 0) {
         const optimal2 = findOptimalSeedForLayout(parsedItems2, '2_per_page', seed2);
@@ -442,7 +459,7 @@ Sebelum menampilkan, periksa diam-diam: jumlah baris sesuai, tiap baris punya 1 
       }
       setToast({
         type: 'success',
-        message: 'Layout 2 TTS per Halaman diaktifkan & disesuaikan otomatis agar pas di ruang kertas.',
+        message: 'Layout 2 TTS per Halaman diaktifkan & disesuaikan otomatis agar pas di ruang kertas (Atas & Bawah sama persis).',
       });
     } else {
       setToast({
@@ -453,19 +470,32 @@ Sebelum menampilkan, periksa diam-diam: jumlah baris sesuai, tiap baris punya 1 
   };
 
   const handleAutoFit = () => {
-    if (activeEditorTab === 'tts1' || printLayout === '1_per_page') {
+    if (activeEditorTab === 'tts1' || printLayout === '1_per_page' || twoPerPageSource === 'same') {
       const optimal = findOptimalSeedForLayout(parsedItems1, printLayout, seed);
       setSeed(optimal);
+      if (twoPerPageSource === 'same') {
+        setSeed2(optimal);
+      }
+      const testLayout = generateCrossword(parsedItems1, optimal);
       setToast({
         type: 'success',
-        message: `Susunan TTS 1 dioptimalkan ke susunan terbaik (${printLayout === '2_per_page' ? 'Pas 2 TTS / Lembar' : 'Pas 1 Lembar'}).`,
+        message:
+          testLayout.unplacedWords.length === 0
+            ? printLayout === '2_per_page' && twoPerPageSource === 'same'
+              ? `Susunan TTS Atas & Bawah dioptimalkan pas (sama persis, 0 tertinggal)!`
+              : `Susunan TTS 1 dioptimalkan pas! Semua ${parsedItems1.length} kata masuk kotak TTS (0 tertinggal).`
+            : `Susunan TTS dioptimalkan ke susunan terbaik (${testLayout.placedWords.length} dari ${parsedItems1.length} kata bersilangan).`,
       });
     } else {
       const optimal = findOptimalSeedForLayout(parsedItems2, printLayout, seed2);
       setSeed2(optimal);
+      const testLayout = generateCrossword(parsedItems2, optimal);
       setToast({
         type: 'success',
-        message: `Susunan TTS 2 dioptimalkan ke susunan terbaik (${printLayout === '2_per_page' ? 'Pas 2 TTS / Lembar' : 'Pas 1 Lembar'}).`,
+        message:
+          testLayout.unplacedWords.length === 0
+            ? `Susunan TTS 2 dioptimalkan pas! Semua ${parsedItems2.length} kata masuk kotak TTS (0 tertinggal).`
+            : `Susunan TTS 2 dioptimalkan ke susunan terbaik (${testLayout.placedWords.length} dari ${parsedItems2.length} kata bersilangan).`,
       });
     }
   };
@@ -505,12 +535,26 @@ Sebelum menampilkan, periksa diam-diam: jumlah baris sesuai, tiap baris punya 1 
 
   const currentSeed = activeEditorTab === 'tts1' ? seed : seed2;
   const handleNextSeed = () => {
-    if (activeEditorTab === 'tts1') setSeed((prev) => prev + 1);
-    else setSeed2((prev) => prev + 1);
+    if (activeEditorTab === 'tts1' || (printLayout === '2_per_page' && twoPerPageSource === 'same')) {
+      setSeed((prev) => {
+        const next = prev + 1;
+        if (twoPerPageSource === 'same') setSeed2(next);
+        return next;
+      });
+    } else {
+      setSeed2((prev) => prev + 1);
+    }
   };
   const handlePrevSeed = () => {
-    if (activeEditorTab === 'tts1') setSeed((prev) => (prev > 1 ? prev - 1 : 9999));
-    else setSeed2((prev) => (prev > 1 ? prev - 1 : 9999));
+    if (activeEditorTab === 'tts1' || (printLayout === '2_per_page' && twoPerPageSource === 'same')) {
+      setSeed((prev) => {
+        const next = prev > 1 ? prev - 1 : 9999;
+        if (twoPerPageSource === 'same') setSeed2(next);
+        return next;
+      });
+    } else {
+      setSeed2((prev) => (prev > 1 ? prev - 1 : 9999));
+    }
   };
 
   // Touch gesture swipe handlers (swipe left/right to change variations)
@@ -531,17 +575,22 @@ Sebelum menampilkan, periksa diam-diam: jumlah baris sesuai, tiap baris punya 1 
     // Trigger only if horizontal swipe exceeds 40px and is predominantly horizontal
     if (Math.abs(diffX) > 40 && Math.abs(diffX) > Math.abs(diffY) * 1.2) {
       if (printLayout === '2_per_page') {
-        const containerRect = containerRef.current?.getBoundingClientRect();
-        const isTopHalf = containerRect
-          ? touchStartY.current < containerRect.top + containerRect.height / 2
-          : true;
-
-        if (isTopHalf) {
-          if (diffX > 0) setSeed((prev) => (prev > 1 ? prev - 1 : 9999));
-          else setSeed((prev) => prev + 1);
+        if (twoPerPageSource === 'same') {
+          if (diffX > 0) handlePrevSeed();
+          else handleNextSeed();
         } else {
-          if (diffX > 0) setSeed2((prev) => (prev > 1 ? prev - 1 : 9999));
-          else setSeed2((prev) => prev + 1);
+          const containerRect = containerRef.current?.getBoundingClientRect();
+          const isTopHalf = containerRect
+            ? touchStartY.current < containerRect.top + containerRect.height / 2
+            : true;
+
+          if (isTopHalf) {
+            if (diffX > 0) setSeed((prev) => (prev > 1 ? prev - 1 : 9999));
+            else setSeed((prev) => prev + 1);
+          } else {
+            if (diffX > 0) setSeed2((prev) => (prev > 1 ? prev - 1 : 9999));
+            else setSeed2((prev) => prev + 1);
+          }
         }
       } else {
         if (diffX > 0) {
@@ -640,7 +689,7 @@ Sebelum menampilkan, periksa diam-diam: jumlah baris sesuai, tiap baris punya 1 
       });
 
       setExportSuccess(true);
-      setTimeout(() => setExportSuccess(false), 2500);
+      setTimeout(() => setExportSuccess(false), 800);
       setToast({
         type: 'success',
         message: `Gambar ${isKey ? 'Kunci Jawaban' : 'Lembar Soal'} (${printLayout === '2_per_page' ? '2 TTS/Halaman' : '1 TTS/Halaman'}) berhasil diproses!`,
@@ -710,7 +759,7 @@ Sebelum menampilkan, periksa diam-diam: jumlah baris sesuai, tiap baris punya 1 
       });
 
       setPdfSuccess(true);
-      setTimeout(() => setPdfSuccess(false), 2500);
+      setTimeout(() => setPdfSuccess(false), 800);
       setToast({
         type: 'success',
         message: `PDF ${isKey ? 'Kunci Jawaban' : 'Lembar Soal'} (${printLayout === '2_per_page' ? '2 TTS/Halaman' : '1 TTS/Halaman'}) berhasil dibuat!`,
@@ -769,8 +818,9 @@ Sebelum menampilkan, periksa diam-diam: jumlah baris sesuai, tiap baris punya 1 
 
   const currentRawWords = activeEditorTab === 'tts1' ? rawWords : rawWords2;
   const setCurrentRawWords = (val: string) => {
-    if (activeEditorTab === 'tts1') setRawWords(val);
-    else setRawWords2(val);
+    const cleaned = cleanCrosswordInput(val);
+    if (activeEditorTab === 'tts1') setRawWords(cleaned);
+    else setRawWords2(cleaned);
   };
 
   const currentParsedItems = activeEditorTab === 'tts1' ? parsedItems1 : parsedItems2;
@@ -1066,19 +1116,41 @@ Sebelum menampilkan, periksa diam-diam: jumlah baris sesuai, tiap baris punya 1 
             <div className="grid grid-cols-2 gap-2 w-full">
               <button
                 type="button"
-                onClick={() => setTwoPerPageSource('same')}
+                onClick={() => {
+                  setTwoPerPageSource('same');
+                  if (parsedItems1.length > 0) {
+                    const optimal = findOptimalSeedForLayout(parsedItems1, '2_per_page', seed);
+                    setSeed(optimal);
+                    setSeed2(optimal);
+                  }
+                  setToast({
+                    type: 'success',
+                    message: '2 TTS Sama diaktifkan: Variasi susunan Atas & Bawah sama persis & otomatis pas.',
+                  });
+                }}
                 className={`w-full py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer text-center ${
                   twoPerPageSource === 'same'
                     ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-xs'
                     : 'bg-white dark:bg-neutral-900 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 border border-neutral-200 dark:border-neutral-700'
                 }`}
+                title="Dua TTS sama persis atas dan bawah untuk hemat kertas"
               >
                 <CopyCheck className="w-3.5 h-3.5 shrink-0" />
-                <span className="truncate">Normal</span>
+                <span className="truncate">2 TTS Sama (Atas & Bawah)</span>
               </button>
               <button
                 type="button"
-                onClick={() => setTwoPerPageSource('different')}
+                onClick={() => {
+                  setTwoPerPageSource('different');
+                  if (parsedItems2.length > 0) {
+                    const optimal2 = findOptimalSeedForLayout(parsedItems2, '2_per_page', seed2);
+                    setSeed2(optimal2);
+                  }
+                  setToast({
+                    type: 'success',
+                    message: '2 TTS Berbeda diaktifkan: Soal TTS 1 dan TTS 2 dapat diisi terpisah.',
+                  });
+                }}
                 className={`w-full py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer text-center ${
                   twoPerPageSource === 'different'
                     ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-xs'
@@ -1162,7 +1234,62 @@ Sebelum menampilkan, periksa diam-diam: jumlah baris sesuai, tiap baris punya 1 
               adjustTextareaHeight();
             }}
             onInput={() => adjustTextareaHeight()}
-            onPaste={() => setTimeout(adjustTextareaHeight, 10)}
+            onPaste={(e) => {
+              const pasteText = e.clipboardData?.getData('text');
+              if (pasteText) {
+                e.preventDefault();
+                const cleanedPaste = cleanCrosswordInput(pasteText);
+                const target = e.currentTarget;
+                const start = target.selectionStart ?? 0;
+                const end = target.selectionEnd ?? 0;
+                const currentVal = target.value;
+                const nextVal = currentVal.substring(0, start) + cleanedPaste + currentVal.substring(end);
+                const finalCleaned = cleanCrosswordInput(nextVal);
+                setCurrentRawWords(finalCleaned);
+
+                setTimeout(() => {
+                  adjustTextareaHeight();
+                  if (target) {
+                    target.selectionStart = target.selectionEnd = start + cleanedPaste.length;
+                  }
+                }, 10);
+
+                // Langsung buat otomatis pas saat ditempel agar tidak ada kata yang tertinggal
+                const newItems = parseRawInput(finalCleaned);
+                if (newItems.length > 0) {
+                  const isTab1 = activeEditorTab === 'tts1' || printLayout === '1_per_page' || twoPerPageSource === 'same';
+                  const currentS = isTab1 ? seed : seed2;
+                  const optimalSeed = findOptimalSeedForLayout(newItems, printLayout, currentS);
+
+                  if (isTab1) {
+                    setSeed(optimalSeed);
+                    if (twoPerPageSource === 'same') {
+                      setSeed2(optimalSeed);
+                    }
+                  } else {
+                    setSeed2(optimalSeed);
+                  }
+
+                  const optLayout = generateCrossword(newItems, optimalSeed);
+                  if (optLayout.unplacedWords.length === 0) {
+                    setToast({
+                      type: 'success',
+                      message:
+                        printLayout === '2_per_page' && twoPerPageSource === 'same'
+                          ? `Teks ditempel & langsung otomatis pas! Atas & Bawah dibuat sama persis (${newItems.length} kata, 0 tertinggal).`
+                          : `Teks ditempel & langsung otomatis pas! Semua ${newItems.length} kata berhasil bersilangan rapi (0 tertinggal).`,
+                    });
+                  } else {
+                    setToast({
+                      type: 'warning',
+                      message: `Teks ditempel & dioptimalkan (${optLayout.placedWords.length} dari ${newItems.length} kata bersilangan rapi).`,
+                    });
+                  }
+                }
+                return;
+              }
+              setTimeout(adjustTextareaHeight, 10);
+            }}
             onCut={() => setTimeout(adjustTextareaHeight, 10)}
             onKeyUp={() => adjustTextareaHeight()}
             onKeyDown={() => {

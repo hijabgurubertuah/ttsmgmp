@@ -7,7 +7,7 @@ export const EmbedExplainer: React.FC = () => {
   const copyToClipboard = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
     setCopiedCode(id);
-    setTimeout(() => setCopiedCode(null), 2500);
+    setTimeout(() => setCopiedCode(null), 800);
   };
 
   const sampleIframeCrosswordlabs = `<iframe width="500" height="500" style="border:3px solid black" src="https://crosswordlabs.com/embed/nama-puzzle-anda"></iframe>`;
